@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>إكس أو</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;800&display=swap">
+<style>
+:root{--bg:#fdf6e3;--ink:#14213d;--card:#fff;--a:#2ec4b6;--b:#ff5d8f;--mut:#5b6478}
+@media (prefers-color-scheme:dark){:root{--bg:#14213d;--ink:#fdf6e3;--card:#22335c;--mut:#aab4cc;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Cairo",system-ui,"Segoe UI",Tahoma,sans-serif;min-height:100vh}
+main{max-width:460px;margin:0 auto;padding:20px 16px 32px;text-align:center}
+h1{font-size:2.2rem;font-weight:800;margin:4px 0 12px}
+.setup{display:grid;gap:10px;margin-top:20px}
+.setup label{text-align:start;font-weight:800}
+input{font:inherit;width:100%;padding:12px;border:2px solid var(--ink);border-radius:14px;background:var(--card);color:var(--ink);font-size:1.15rem}
+button{font:inherit;color:var(--ink);cursor:pointer}
+.act{width:100%;background:var(--ink);color:var(--bg);border:0;border-radius:14px;padding:14px;font-size:1.2rem;font-weight:800}
+.alt{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.err{color:var(--b);font-weight:800;min-height:1.5em;margin:0}
+.code{font-size:4rem;font-weight:800;letter-spacing:.2em;direction:ltr;margin:10px 0}
+.score{display:flex;justify-content:space-between;color:var(--mut);font-weight:500;margin-bottom:16px}
+.score b{color:var(--ink);font-size:1.2rem}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(86vw,360px);margin:0 auto}
+.cell{aspect-ratio:1;background:var(--card);border:2px solid var(--ink);border-radius:16px;font-size:calc(min(86vw,360px) / 3 * .5);display:grid;place-items:center;line-height:1;padding:0}
+.cell.win{outline:4px solid var(--b);outline-offset:2px}
+.msg{min-height:3.2em;font-size:1.15rem;font-weight:800;margin:18px 0 12px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offset:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>إكس أو ❌⭕</h1>
+
+  <section class="setup" id="s-mode">
+    <p><a href="/" style="color:var(--mut)">← رجوع للألعاب</a></p>
+    <button class="act" id="m-ai">🤖 العب ضد الكمبيوتر</button>
+    <button class="act alt" id="m-friend">👥 العب مع صديق</button>
+  </section>
+
+  <section class="setup" id="s-name" hidden>
+    <label for="name">اسمك إيه؟</label>
+    <input id="name" maxlength="12" placeholder="مثلاً: برعي" autocomplete="off">
+    <button class="act" id="create">إنشاء غرفة جديدة</button>
+    <label for="code">أو ادخل غرفة صاحبك بالكود</label>
+    <input id="code" inputmode="numeric" maxlength="4" placeholder="مثلاً: 4821" autocomplete="off">
+    <button class="act alt" id="join">دخول الغرفة</button>
+    <button class="act alt" id="to-mode">رجوع</button>
+    <p class="err" id="err"></p>
+  </section>
+
+  <section id="s-wait" hidden>
+    <p>كود غرفتك</p>
+    <div class="code" id="roomcode"></div>
+    <p>ابعت الكود لصاحبك واستنى لحد ما يدخل...</p>
+  </section>
+
+  <section id="s-game" hidden>
+    <div class="score">
+      <span><span id="n-me"></span>: <b id="s-me">0</b></span>
+      <span>تعادل: <b id="s-draw">0</b></span>
+      <span><span id="n-opp"></span>: <b id="s-opp">0</b></span>
+    </div>
+    <div class="board" id="board"></div>
+    <p class="msg" id="msg"></p>
+    <button class="act" id="act" hidden>جولة جديدة</button>
+    <button class="act alt" id="home" style="margin-top:12px">رجوع للقائمة</button>
+  </section>
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const $ = id => document.getElementById(id);
+const SYM = ["❌", "⭕"];
+const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+let mode = "ai", me = 0, names = ["أنت", "الكمبيوتر"];
+let board = Array(9).fill(null), turn = 0, over = false, winner = null, line = [], scores = [0, 0, 0], starter = 0;
+
+const cells = [];
+for (let i = 0; i < 9; i++) {
+  const b = document.createElement("button");
+  b.className = "cell";
+  b.setAttribute("aria-label", "خانة " + (i + 1));
+  b.onclick = () => tap(i);
+  $("board").appendChild(b);
+  cells.push(b);
+}
+
+function show(id) {
+  ["s-mode", "s-name", "s-wait", "s-game"].forEach(s => $(s).hidden = s !== id);
+}
+function setLabels() {
+  $("n-me").textContent = names[me] + " " + SYM[me];
+  $("n-opp").textContent = names[1 - me] + " " + SYM[1 - me];
+}
+function check(b) {
+  for (const l of LINES) {
+    if (b[l[0]] !== null && b[l[0]] === b[l[1]] && b[l[0]] === b[l[2]]) return { w: b[l[0]], line: l };
+  }
+  return b.every(x => x !== null) ? { w: 2, line: [] } : null;
+}
+
+function render() {
+  cells.forEach((c, i) => {
+    c.textContent = board[i] === null ? "" : SYM[board[i]];
+    c.classList.toggle("win", line.includes(i));
+  });
+  $("s-me").textContent = scores[me];
+  $("s-opp").textContent = scores[1 - me];
+  $("s-draw").textContent = scores[2];
+  if (over) {
+    $("msg").textContent = winner === 2 ? "تعادل!" : winner === me ? "كسبت! 🎉" : names[winner] + " كسب 😅";
+  } else {
+    $("msg").textContent = turn === me ? "دورك" : "دور " + names[1 - me] + "...";
+  }
+  $("act").hidden = !over;
+}
+
+// ---------- الاختيار ----------
+$("m-friend").onclick = () => show("s-name");
+$("to-mode").onclick = () => show("s-mode");
+$("home").onclick = () => location.reload();
+
+// ---------- ضد الكمبيوتر ----------
+$("m-ai").onclick = () => {
+  mode = "ai"; me = 0; names = ["أنت", "الكمبيوتر"]; scores = [0, 0, 0]; starter = 1;
+  setLabels();
+  show("s-game");
+  newRoundAI();
+};
+function newRoundAI() {
+  board = Array(9).fill(null); over = false; winner = null; line = [];
+  starter = 1 - starter; turn = starter;
+  $("act").textContent = "جولة جديدة";
+  render();
+  if (turn !== me) setTimeout(aiMove, 500);
+}
+function play(i) {
+  board[i] = turn;
+  const r = check(board);
+  if (r) { over = true; winner = r.w; line = r.line; scores[r.w]++; }
+  else turn = 1 - turn;
+  render();
+}
+function winMove(b, p) {
+  for (const l of LINES) {
+    const v = l.map(i => b[i]);
+    if (v.filter(x => x === p).length === 2 && v.includes(null)) return l[v.indexOf(null)];
+  }
+  return -1;
+}
+function aiMove() {
+  if (over || turn === me) return;
+  const ai = 1 - me;
+  let m = winMove(board, ai);                 // لو يقدر يكسب
+  if (m < 0) m = winMove(board, me);          // لو لازم يمنعك
+  if (m < 0 && board[4] === null) m = 4;      // النص
+  if (m < 0) {
+    const free = board.map((x, i) => x === null ? i : -1).filter(i => i >= 0);
+    m = free[Math.floor(Math.random() * free.length)];
+  }
+  play(m);
+}
+function tap(i) {
+  if (over || board[i] !== null || turn !== me) return;
+  if (mode === "ai") { play(i); if (!over) setTimeout(aiMove, 500); }
+  else socket.emit("xo:move", i);
+}
+
+// ---------- مع صديق ----------
+function getName() {
+  const n = $("name").value.trim();
+  if (!n) { $("err").textContent = "اكتب اسمك الأول"; $("name").focus(); return null; }
+  return n;
+}
+$("create").onclick = () => { const n = getName(); if (n) socket.emit("xo:create", n); };
+$("join").onclick = () => {
+  const n = getName();
+  if (n) socket.emit("xo:join", { code: $("code").value.trim(), name: n });
+};
+socket.on("xo:created", c => { $("roomcode").textContent = c; show("s-wait"); });
+socket.on("xo:fail", m => { $("err").textContent = m; });
+socket.on("xo:start", d => {
+  mode = "friend"; names = d.names; me = d.ids.indexOf(socket.id);
+  setLabels();
+  show("s-game");
+});
+socket.on("xo:state", s => {
+  ({ board, turn, over, winner, line, scores } = s);
+  render();
+});
+socket.on("xo:left", () => {
+  over = true;
+  $("msg").textContent = names[1 - me] + " خرج من اللعبة";
+  $("act").hidden = false;
+  $("act").textContent = "رجوع للبداية";
+  $("act").onclick = () => location.reload();
+});
+
+$("act").onclick = () => {
+  if (mode === "ai") newRoundAI();
+  else socket.emit("xo:again");
+};
+</script>
+</body>
+</html>
