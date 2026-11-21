@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تحدي الحساب السريع</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;800&display=swap">
+<style>
+:root{--bg:#fdf6e3;--ink:#14213d;--card:#fff;--a:#2ec4b6;--b:#ff5d8f;--mut:#5b6478;--ok:#1b8a3a}
+@media (prefers-color-scheme:dark){:root{--bg:#14213d;--ink:#fdf6e3;--card:#22335c;--mut:#aab4cc;--ok:#5fd48a;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Cairo",system-ui,"Segoe UI",Tahoma,sans-serif;min-height:100vh}
+main{max-width:460px;margin:0 auto;padding:20px 16px 32px;text-align:center}
+h1{font-size:2rem;font-weight:800;margin:4px 0 12px}
+p{margin:0 0 12px}
+a{color:var(--mut)}
+button{font:inherit;color:var(--ink);cursor:pointer}
+.act{width:100%;background:var(--ink);color:var(--bg);border:0;border-radius:14px;padding:14px;font-size:1.2rem;font-weight:800;margin-top:10px}
+.alt{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+input{font:inherit;width:100%;padding:14px;border:2px solid var(--ink);border-radius:14px;background:var(--card);color:var(--ink);font-size:1.6rem;text-align:center}
+.bar{display:flex;justify-content:space-between;align-items:center;font-weight:800;margin-bottom:10px}
+.time{height:12px;background:var(--card);border:2px solid var(--ink);border-radius:8px;overflow:hidden}
+.time i{display:block;height:100%;width:100%;background:var(--a)}
+.q{font-size:3rem;font-weight:800;margin:26px 0;direction:ltr}
+.msg{min-height:2.6em;font-size:1.2rem;font-weight:800;margin:14px 0 0}
+.msg.ok{color:var(--ok)}
+.msg.bad{color:var(--b)}
+.big{font-size:3rem;font-weight:800;margin:10px 0}
+button:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offset:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>تحدي الحساب السريع ⚡</h1>
+
+  <section id="s-start">
+    <p><a href="/">← رجوع للألعاب</a></p>
+    <p>50 سؤال بتبدأ سهلة جداً وبتصعب شوية شوية. خد وقتك وركّز!</p>
+    <p>أحسن نتيجة: <b id="best">0</b> / 50</p>
+    <button class="act" id="go">ابدأ التحدي</button>
+  </section>
+
+  <section id="s-play" hidden>
+    <div class="bar">
+      <span>السؤال <b id="no">1</b> / 50</span>
+      <span id="streak"></span>
+      <span>✅ <b id="sc">0</b></span>
+    </div>
+    <div class="time"><i id="tb"></i></div>
+    <div class="q" id="q"></div>
+    <input id="ans" inputmode="numeric" autocomplete="off" placeholder="اكتب الإجابة">
+    <button class="act" id="ok">تأكيد</button>
+    <p class="msg" id="fb"></p>
+  </section>
+
+  <section id="s-end" hidden>
+    <p>نتيجتك</p>
+    <div class="big" id="final"></div>
+    <p>الوقت: <b id="tot"></b></p>
+    <p class="msg" id="grade"></p>
+    <button class="act" id="again">العب تاني</button>
+    <button class="act alt" id="home">رجوع للألعاب</button>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const TOTAL = 50, TL = [15, 15, 15, 18, 20]; // الوقت لكل مرحلة بالثواني
+let i = 0, score = 0, streak = 0, cur = null, deadline = 0, iv = null, locked = false, t0 = 0;
+
+function getBest() { try { return +localStorage.getItem("math_best") || 0; } catch (e) { return 0; } }
+function setBest(v) { try { localStorage.setItem("math_best", v); } catch (e) {} }
+$("best").textContent = getBest();
+
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+
+// أسئلة سهلة، وكل 10 أسئلة مرحلة أصعب شوية
+function make(n) {
+  const s = Math.floor(n / 10), r = Math.random() < 0.5;
+  let a, b;
+  if (s === 0) { // جمع وطرح لحد 10
+    if (r) { a = rnd(1, 9); b = rnd(1, 10 - a); return [a + " + " + b, a + b]; }
+    a = rnd(2, 10); b = rnd(1, a - 1); return [a + " − " + b, a - b];
+  }
+  if (s === 1) { // لحد 20
+    if (r) { a = rnd(1, 19); b = rnd(1, 20 - a); return [a + " + " + b, a + b]; }
+    a = rnd(5, 20); b = rnd(1, a - 1); return [a + " − " + b, a - b];
+  }
+  if (s === 2) { // لحد 50
+    if (r) { a = rnd(10, 40); b = rnd(1, 50 - a); return [a + " + " + b, a + b]; }
+    a = rnd(15, 50); b = rnd(1, a - 1); return [a + " − " + b, a - b];
+  }
+  if (s === 3) { // ضرب بسيط
+    a = [2, 3, 4, 5, 10][rnd(0, 4)]; b = rnd(1, 10);
+    return r ? [a + " × " + b, a * b] : [b + " × " + a, a * b];
+  }
+  const k = rnd(0, 2); // مرحلة أخيرة
+  if (k === 0) {
+    if (r) { a = rnd(10, 80); b = rnd(1, 100 - a); return [a + " + " + b, a + b]; }
+    a = rnd(20, 100); b = rnd(1, a - 1); return [a + " − " + b, a - b];
+  }
+  if (k === 1) { a = rnd(2, 9); b = rnd(2, 9); return [a + " × " + b, a * b]; }
+  b = rnd(2, 5); const q = rnd(1, 10); a = b * q;
+  return [a + " ÷ " + b, q];
+}
+
+function start() {
+  i = 0; score = 0; streak = 0; t0 = Date.now();
+  $("sc").textContent = "0"; $("streak").textContent = "";
+  $("s-start").hidden = true; $("s-end").hidden = true; $("s-play").hidden = false;
+  next();
+}
+
+function next() {
+  if (i >= TOTAL) return finish();
+  locked = false;
+  cur = make(i);
+  $("no").textContent = i + 1;
+  $("q").textContent = cur[0] + " = ?";
+  $("ans").value = "";
+  $("fb").textContent = ""; $("fb").className = "msg";
+  const tl = TL[Math.floor(i / 10)] * 1000;
+  deadline = Date.now() + tl;
+  clearInterval(iv);
+  iv = setInterval(() => {
+    const left = deadline - Date.now();
+    $("tb").style.width = Math.max(0, left / tl * 100) + "%";
+    if (left <= 0) answer(null);
+  }, 100);
+  $("ans").focus();
+}
+
+function answer(v) {
+  if (locked) return;
+  locked = true;
+  clearInterval(iv);
+  const good = v === cur[1];
+  if (good) {
+    score++; streak++;
+    $("fb").textContent = "صح! ✅"; $("fb").className = "msg ok";
+  } else {
+    streak = 0;
+    $("fb").textContent = (v === null ? "خلص الوقت ⏰ " : "غلط ❌ ") + "الإجابة: " + cur[1];
+    $("fb").className = "msg bad";
+  }
+  $("sc").textContent = score;
+  $("streak").textContent = streak >= 3 ? "🔥 " + streak : "";
+  i++;
+  setTimeout(next, good ? 500 : 1400);
+}
+
+function submit() {
+  if (locked) return;
+  const t = $("ans").value.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim();
+  if (t === "" || isNaN(+t)) return;
+  answer(+t);
+}
+
+function finish() {
+  clearInterval(iv);
+  const sec = Math.round((Date.now() - t0) / 1000);
+  $("s-play").hidden = true; $("s-end").hidden = false;
+  $("final").textContent = score + " / " + TOTAL;
+  $("tot").textContent = sec + " ثانية";
+  $("grade").textContent = score >= 45 ? "عبقري! 🏆" : score >= 35 ? "ممتاز! 🌟" : score >= 25 ? "كويس جداً 👍" : score >= 15 ? "كويس، حاول تاني 💪" : "متزعلش، جرّب تاني 🙂";
+  if (score > getBest()) { setBest(score); $("best").textContent = score; }
+}
+
+$("go").onclick = start;
+$("again").onclick = start;
+$("home").onclick = () => { location.href = "/"; };
+$("ok").addEventListener("pointerdown", e => e.preventDefault()); // عشان الكيبورد ميقفلش
+$("ok").onclick = submit;
+$("ans").addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+</script>
+</body>
+</html>
