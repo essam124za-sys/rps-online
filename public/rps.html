@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>حجر ورقة مقص أونلاين</title>
+<title>حجر ورقة مقص</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;800&display=swap">
 <style>
 :root{--bg:#fdf6e3;--ink:#14213d;--card:#fff;--a:#2ec4b6;--b:#ff5d8f;--mut:#5b6478}
@@ -43,13 +43,20 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offs
 <main>
   <h1>حجر ورقة مقص</h1>
 
-  <section class="setup" id="s-name">
+  <section class="setup" id="s-mode">
+    <p><a href="/" style="color:var(--mut)">← رجوع للألعاب</a></p>
+    <button class="act" id="m-ai">🤖 العب ضد الكمبيوتر</button>
+    <button class="act alt" id="m-friend">👥 العب مع صديق</button>
+  </section>
+
+  <section class="setup" id="s-name" hidden>
     <label for="name">اسمك إيه؟</label>
     <input id="name" maxlength="12" placeholder="مثلاً: برعي" autocomplete="off">
     <button class="act" id="create">إنشاء غرفة جديدة</button>
     <label for="code">أو ادخل غرفة صاحبك بالكود</label>
     <input id="code" inputmode="numeric" maxlength="4" placeholder="مثلاً: 4821" autocomplete="off">
     <button class="act alt" id="join">دخول الغرفة</button>
+    <button class="act alt" id="to-mode">رجوع</button>
     <p class="err" id="err"></p>
   </section>
 
@@ -76,6 +83,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offs
       <button data-p="scissors">✌️<small>مقص</small></button>
     </div>
     <button class="act" id="act" hidden>جولة جديدة</button>
+    <button class="act alt" id="home" style="margin-top:12px">رجوع للقائمة</button>
   </section>
 </main>
 
@@ -84,32 +92,46 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offs
 const socket = io();
 const $ = id => document.getElementById(id);
 const EMOJI = { rock: "✊", paper: "✋", scissors: "✌️" };
-let me = 0, names = ["", ""], phase = "wait";
+const BEATS = { rock: "scissors", paper: "rock", scissors: "paper" };
+let me = 0, names = ["", ""], phase = "wait", mode = "friend", aiScore = [0, 0, 0];
 
 function show(id) {
-  ["s-name", "s-wait", "s-game"].forEach(s => $(s).hidden = s !== id);
+  ["s-mode", "s-name", "s-wait", "s-game"].forEach(s => $(s).hidden = s !== id);
+}
+function setNames() {
+  $("n-me").textContent = $("p-me").textContent = names[me];
+  $("n-opp").textContent = $("p-opp").textContent = names[1 - me];
 }
 
+// اختيار الوضع
+$("m-friend").onclick = () => { mode = "friend"; show("s-name"); };
+$("to-mode").onclick = () => show("s-mode");
+$("home").onclick = () => location.reload();
+$("m-ai").onclick = () => {
+  mode = "ai"; me = 0; names = ["أنت", "الكمبيوتر"]; aiScore = [0, 0, 0];
+  setNames();
+  ["s-me", "s-opp", "s-draw"].forEach(id => $(id).textContent = "0");
+  show("s-game");
+  newRound();
+};
+
+// اللعب مع صديق
 function getName() {
   const n = $("name").value.trim();
   if (!n) { $("err").textContent = "اكتب اسمك الأول"; $("name").focus(); return null; }
   return n;
 }
-
 $("create").onclick = () => { const n = getName(); if (n) socket.emit("create", n); };
 $("join").onclick = () => {
   const n = getName();
   if (n) socket.emit("join", { code: $("code").value.trim(), name: n });
 };
-
 socket.on("created", c => { $("roomcode").textContent = c; show("s-wait"); });
 socket.on("fail", m => { $("err").textContent = m; });
-
 socket.on("start", data => {
   names = data.names;
   me = data.ids.indexOf(socket.id);
-  $("n-me").textContent = $("p-me").textContent = names[me];
-  $("n-opp").textContent = $("p-opp").textContent = names[1 - me];
+  setNames();
   show("s-game");
   newRound();
 });
@@ -136,11 +158,29 @@ socket.on("picked", st => {
   }
 });
 
+// اختيار اللاعب
 document.querySelectorAll("[data-p]").forEach(b => {
-  b.onclick = () => socket.emit("pick", b.dataset.p);
+  b.onclick = () => {
+    if (mode === "ai") aiPick(b.dataset.p);
+    else socket.emit("pick", b.dataset.p);
+  };
 });
 
-socket.on("result", r => {
+// الكمبيوتر بيختار عشوائي
+function aiPick(c) {
+  $("picks").hidden = true;
+  $("b-me").textContent = "✓";
+  $("msg").textContent = "الكمبيوتر بيفكر...";
+  setTimeout(() => {
+    const k = ["rock", "paper", "scissors"];
+    const o = k[Math.floor(Math.random() * 3)];
+    const w = c === o ? 2 : BEATS[c] === o ? 0 : 1;
+    aiScore[w]++;
+    onResult({ picks: [c, o], winner: w, scores: aiScore.slice() });
+  }, 700);
+}
+
+function onResult(r) {
   phase = "result";
   $("f-me").textContent = EMOJI[r.picks[me]];
   $("f-opp").textContent = EMOJI[r.picks[1 - me]];
@@ -152,13 +192,18 @@ socket.on("result", r => {
   if (r.winner === 2) {
     $("msg").textContent = "تعادل!";
   } else {
-    $("msg").textContent = names[r.winner] + " كسب 🎉";
+    if (mode === "ai") $("msg").textContent = r.winner === 0 ? "كسبت! 🎉" : "الكمبيوتر كسب 😅";
+    else $("msg").textContent = names[r.winner] + " كسب 🎉";
     $("slot-" + (r.winner === me ? "me" : "opp")).classList.add("win");
   }
   $("act").hidden = false;
-});
+}
+socket.on("result", onResult);
 
-$("act").onclick = () => { newRound(); socket.emit("again"); };
+$("act").onclick = () => {
+  newRound();
+  if (mode !== "ai") socket.emit("again");
+};
 
 socket.on("left", () => {
   phase = "over";
