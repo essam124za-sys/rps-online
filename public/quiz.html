@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ده إيه؟</title>
+<style>
+:root{--bg:#fdf6e3;--ink:#14213d;--card:#fff;--a:#2ec4b6;--b:#ff5d8f;--mut:#5b6478;--ok:#1b8a3a}
+@media (prefers-color-scheme:dark){:root{--bg:#14213d;--ink:#fdf6e3;--card:#22335c;--mut:#aab4cc;--ok:#5fd48a;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Segoe UI",Tahoma,"Noto Sans Arabic",sans-serif;min-height:100vh}
+main{max-width:460px;margin:0 auto;padding:16px 16px 32px;text-align:center}
+h1{font-size:1.9rem;font-weight:800;margin:4px 0 8px}
+p{margin:0 0 12px}
+a{color:var(--mut)}
+button{font:inherit;color:var(--ink);cursor:pointer}
+.act{width:100%;background:var(--ink);color:var(--bg);border:0;border-radius:14px;padding:14px;font-size:1.2rem;font-weight:800;margin-top:10px}
+.alt{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.chs{display:grid;gap:10px;margin-top:12px}
+.ch{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:14px 16px;font-size:1.2rem;font-weight:800;text-align:start}
+.ch small{display:block;color:var(--mut);font-weight:500;font-size:.95rem}
+.ch:disabled{opacity:.45;cursor:not-allowed}
+.bar{display:flex;justify-content:space-between;align-items:center;font-weight:800;margin-bottom:6px}
+.pic{font-size:7rem;line-height:1.15;margin:16px 0 6px}
+.ask{font-size:1.3rem;font-weight:800;margin:0 0 14px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opts button{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:18px 6px;font-size:1.3rem;font-weight:800}
+.opts button.bad{background:var(--b);color:#fff;border-color:var(--b);opacity:.7}
+.opts button.good{background:var(--ok);color:#fff;border-color:var(--ok)}
+.msg{min-height:2.8em;font-size:1.2rem;font-weight:800;margin:14px 0 0}
+.big{font-size:3rem;font-weight:800;margin:10px 0}
+button:focus-visible{outline:3px solid var(--b);outline-offset:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <h1>ده إيه؟ 🧐</h1>
+
+  <section id="s-ch">
+    <p><a href="/">← رجوع للألعاب</a></p>
+    <p>جاوب على 10 أسئلة في كل باب. محتاج 30 نجمة من 40 عشان تفتح الباب اللي بعده.</p>
+    <p>⭐⭐⭐⭐ لو جاوبت صح من أول مرة وبسرعة</p>
+    <div class="chs" id="chs"></div>
+  </section>
+
+  <section id="s-play" hidden>
+    <div class="bar"><span id="ctitle"></span><span>الدور <b id="no">1</b> / 10</span><span>⭐ <b id="st">0</b></span></div>
+    <div class="pic" id="pic"></div>
+    <p class="ask">ده إيه؟</p>
+    <div class="opts" id="opts"></div>
+    <p class="msg" id="fb"></p>
+  </section>
+
+  <section id="s-end" hidden>
+    <p id="etitle"></p>
+    <div class="big" id="etotal"></div>
+    <p class="msg" id="emsg"></p>
+    <button class="act" id="nextch" hidden>الباب التالي</button>
+    <button class="act" id="again">العب الباب تاني</button>
+    <button class="act alt" id="tochs">الأبواب</button>
+  </section>
+</main>
+
+<script>
+// كل عنصر: [الشكل، الاسم، النوع]  f = فاكهة، v = خضار، a = حيوان
+const CH = [
+  { t: "فواكه 🍎", items: [["🍎","تفاحة","f"],["🍌","موزة","f"],["🍇","عنب","f"],["🍓","فراولة","f"],["🍉","بطيخ","f"],["🍊","برتقالة","f"],["🍋","ليمونة","f"],["🍍","أناناس","f"],["🍒","كرز","f"],["🍑","خوخة","f"]] },
+  { t: "حيوانات البيت والمزرعة 🐶", items: [["🐶","كلب","a"],["🐱","قطة","a"],["🐰","أرنب","a"],["🐭","فأر","a"],["🐮","بقرة","a"],["🐷","خنزير","a"],["🐑","خروف","a"],["🐐","ماعز","a"],["🐴","حصان","a"],["🐔","دجاجة","a"]] },
+  { t: "خضروات 🥕", items: [["🥕","جزرة","v"],["🥔","بطاطس","v"],["🌽","ذرة","v"],["🥦","بروكلي","v"],["🥒","خيار","v"],["🍆","باذنجان","v"],["🌶️","فلفل حار","v"],["🧅","بصلة","v"],["🧄","ثومة","v"],["🍅","طماطم","v"]] },
+  { t: "حيوانات الغابة 🦁", items: [["🦁","أسد","a"],["🐯","نمر","a"],["🐘","فيل","a"],["🦒","زرافة","a"],["🐻","دب","a"],["🐼","باندا","a"],["🦓","حمار وحشي","a"],["🐵","قرد","a"],["🐪","جمل","a"],["🦊","ثعلب","a"]] },
+  { t: "فواكه وخضروات 🥭", mix: ["f","v"], items: [["🥭","مانجو","f"],["🍐","كمثرى","f"],["🥝","كيوي","f"],["🥥","جوز هند","f"],["🍈","شمام","f"],["🥬","خس","v"],["🍄","عيش الغراب","v"],["🎃","قرع","v"],["🍠","بطاطا حلوة","v"],["🥜","فول سوداني","v"]] },
+  { t: "البحر والطيور والحشرات 🐬", items: [["🐬","دلفين","a"],["🐳","حوت","a"],["🐙","أخطبوط","a"],["🦀","سلطعون","a"],["🐢","سلحفاة","a"],["🐧","بطريق","a"],["🦆","بطة","a"],["🦉","بومة","a"],["🐝","نحلة","a"],["🦋","فراشة","a"]] },
+  { t: "التحدي الكبير 🏆", mix: ["f","v","a"], items: [["🦈","قرش","a"],["🐊","تمساح","a"],["🐍","ثعبان","a"],["🐸","ضفدع","a"],["🦅","نسر","a"],["🦜","ببغاء","a"],["🐞","دعسوقة","a"],["🐜","نملة","a"],["🦏","وحيد القرن","a"],["🥑","أفوكادو","f"]] }
+];
+const ALL = [].concat(...CH.map(c => c.items));
+const NEED = 30; // النجوم المطلوبة لفتح الباب اللي بعده
+
+const $ = id => document.getElementById(id);
+function load() { try { const v = JSON.parse(localStorage.getItem("quiz_stars")); if (Array.isArray(v) && v.length === 70) return v; } catch (e) {} return Array(70).fill(0); }
+let best = load();
+function save() { try { localStorage.setItem("quiz_stars", JSON.stringify(best)); } catch (e) {} }
+const total = c => best.slice(c * 10, c * 10 + 10).reduce((a, b) => a + b, 0);
+const open = c => c === 0 || total(c - 1) >= NEED;
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+let ci = 0, ri = 0, order = [], wrong = 0, t0 = 0, run = 0, locked = false;
+
+function chapters() {
+  $("s-play").hidden = true; $("s-end").hidden = true; $("s-ch").hidden = false;
+  $("chs").innerHTML = "";
+  CH.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "ch";
+    const ok = open(i);
+    b.disabled = !ok;
+    b.innerHTML = "<span>الباب " + (i + 1) + ": " + c.t + "<small>" + (ok ? "⭐ " + total(i) + " / 40" : "محتاج " + NEED + " نجمة من الباب اللي قبله") + "</small></span><span>" + (ok ? "▶" : "🔒") + "</span>";
+    b.onclick = () => startChapter(i);
+    $("chs").appendChild(b);
+  });
+}
+
+function startChapter(i) {
+  ci = i; ri = 0; run = 0;
+  order = shuffle(CH[i].items);
+  $("s-ch").hidden = true; $("s-end").hidden = true; $("s-play").hidden = false;
+  $("ctitle").textContent = "الباب " + (i + 1);
+  $("st").textContent = "0";
+  question();
+}
+
+function question() {
+  locked = false; wrong = 0;
+  const it = order[ri];
+  $("no").textContent = ri + 1;
+  $("pic").textContent = it[0];
+  $("fb").textContent = "";
+  const groups = CH[ci].mix || [it[2]];
+  const others = shuffle(ALL.filter(x => groups.indexOf(x[2]) >= 0 && x[1] !== it[1])).slice(0, 3);
+  const opts = shuffle(others.concat([it]));
+  $("opts").innerHTML = "";
+  opts.forEach(o => {
+    const b = document.createElement("button");
+    b.textContent = o[1];
+    b.onclick = () => pick(b, o[1] === it[1]);
+    $("opts").appendChild(b);
+  });
+  t0 = Date.now();
+}
+
+function starsFor(w, sec) { return w === 0 ? (sec <= 5 ? 4 : 3) : w === 1 ? 2 : 1; }
+
+function pick(btn, good) {
+  if (locked) return;
+  if (!good) {
+    wrong++; btn.classList.add("bad"); btn.disabled = true;
+    $("fb").textContent = "غلط ❌ حاول تاني";
+    return;
+  }
+  locked = true;
+  btn.classList.add("good");
+  const s = starsFor(wrong, (Date.now() - t0) / 1000);
+  run += s; $("st").textContent = run;
+  const idx = ci * 10 + ri;
+  if (s > best[idx]) { best[idx] = s; save(); }
+  $("fb").textContent = "صح! 🎉 " + "⭐".repeat(s);
+  setTimeout(() => { ri++; if (ri >= 10) finish(); else question(); }, 1100);
+}
+
+function finish() {
+  $("s-play").hidden = true; $("s-end").hidden = false;
+  $("etitle").textContent = "الباب " + (ci + 1) + ": " + CH[ci].t;
+  $("etotal").textContent = "⭐ " + run + " / 40";
+  const unlocked = total(ci) >= NEED;
+  const last = ci === CH.length - 1;
+  $("emsg").textContent = unlocked
+    ? (last ? "خلصت كل الأبواب! إنت بطل 🏆" : "برافو! فتحت الباب اللي بعده 🔓🎉")
+    : "محتاج " + NEED + " نجمة عشان تفتح الباب اللي بعده. جرّب تاني 💪";
+  $("nextch").hidden = !(unlocked && !last);
+}
+
+$("nextch").onclick = () => startChapter(ci + 1);
+$("again").onclick = () => startChapter(ci);
+$("tochs").onclick = chapters;
+chapters();
+</script>
+</body>
+</html>
