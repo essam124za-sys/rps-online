@@ -14,10 +14,13 @@ const BEATS = { rock: "scissors", paper: "rock", scissors: "paper" };
 const rooms = {};
 // غرف إكس أو
 const xoRooms = {};
+// غرف سباق العربيات
+const raceRooms = {};
+const RACE_TARGET = 50; // عدد الضغطات اللي توصّل العربية لخط النهاية
 
 function newCode() {
   let c;
-  do { c = String(Math.floor(1000 + Math.random() * 9000)); } while (rooms[c] || xoRooms[c]);
+  do { c = String(Math.floor(1000 + Math.random() * 9000)); } while (rooms[c] || xoRooms[c] || raceRooms[c]);
   return c;
 }
 
@@ -32,6 +35,15 @@ function xoCheck(b) {
   return b.every(x => x !== null) ? { w: 2, line: [] } : null;
 }
 const xoState = r => ({ board: r.board, turn: r.turn, over: r.over, winner: r.winner, line: r.line, scores: r.scores });
+
+// ---------- سباق العربيات ----------
+const raceState = r => ({ pos: r.pos, over: r.over, winner: r.winner, scores: r.scores, target: RACE_TARGET });
+function raceRound(code, r) {
+  r.pos = [0, 0]; r.over = false; r.winner = null;
+  r.startAt = Date.now() + 3500; // السيرفر مبيقبلش ضغطات قبل ما العد التنازلي يخلص
+  io.to(code).emit("race:round", { startIn: 3500 });
+  io.to(code).emit("race:state", raceState(r));
+}
 
 io.on("connection", socket => {
   // إنشاء غرفة
@@ -141,6 +153,53 @@ io.on("connection", socket => {
     io.to(socket.xoRoom).emit("xo:state", xoState(r));
   });
 
+  // ---------- سباق العربيات ----------
+  socket.on("race:create", name => {
+    if (socket.raceRoom || socket.room || socket.xoRoom) return;
+    const c = newCode();
+    raceRooms[c] = {
+      players: [{ id: socket.id, name: String(name).slice(0, 12), last: 0 }],
+      pos: [0, 0], over: false, winner: null, scores: [0, 0], startAt: 0,
+    };
+    socket.join(c);
+    socket.raceRoom = c;
+    socket.emit("race:created", c);
+  });
+
+  socket.on("race:join", ({ code, name }) => {
+    if (socket.raceRoom || socket.room || socket.xoRoom) return;
+    const r = raceRooms[code];
+    if (!r) return socket.emit("race:fail", "الكود غلط، راجعه تاني");
+    if (r.players.length >= 2) return socket.emit("race:fail", "الغرفة دي فيها لاعبين خلاص");
+    r.players.push({ id: socket.id, name: String(name).slice(0, 12), last: 0 });
+    socket.join(code);
+    socket.raceRoom = code;
+    io.to(code).emit("race:start", {
+      names: r.players.map(p => p.name),
+      ids: r.players.map(p => p.id),
+    });
+    raceRound(code, r);
+  });
+
+  // ضغطة على الشاشة = العربية تتحرك خطوة
+  socket.on("race:tap", () => {
+    const r = raceRooms[socket.raceRoom];
+    if (!r || r.players.length < 2 || r.over) return;
+    const now = Date.now();
+    if (now < r.startAt) return;
+    const me = r.players.findIndex(p => p.id === socket.id);
+    if (me < 0 || now - r.players[me].last < 40) return;
+    r.players[me].last = now;
+    r.pos[me]++;
+    if (r.pos[me] >= RACE_TARGET) { r.over = true; r.winner = me; r.scores[me]++; }
+    io.to(socket.raceRoom).emit("race:state", raceState(r));
+  });
+
+  socket.on("race:again", () => {
+    const r = raceRooms[socket.raceRoom];
+    if (r && r.over) raceRound(socket.raceRoom, r);
+  });
+
   socket.on("disconnect", () => {
     if (socket.room && rooms[socket.room]) {
       socket.to(socket.room).emit("left");
@@ -149,6 +208,10 @@ io.on("connection", socket => {
     if (socket.xoRoom && xoRooms[socket.xoRoom]) {
       socket.to(socket.xoRoom).emit("xo:left");
       delete xoRooms[socket.xoRoom];
+    }
+    if (socket.raceRoom && raceRooms[socket.raceRoom]) {
+      socket.to(socket.raceRoom).emit("race:left");
+      delete raceRooms[socket.raceRoom];
     }
   });
 });
