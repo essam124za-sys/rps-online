@@ -1,5 +1,5 @@
-const CACHE = "games-v1";
-const FILES = ["/", "/index.html", "/quiz.html", "/math.html", "/fruits.html"];
+const CACHE = "games-v2";
+const FILES = ["/", "/index.html", "/quiz.html", "/math.html", "/fruits.html", "/race.html"];
 
 // أول مرة: نحفظ الصفحات على التليفون
 self.addEventListener("install", e => {
