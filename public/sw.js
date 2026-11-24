@@ -1,32 +1,42 @@
-const CACHE = "games-v2";
-const FILES = ["/", "/index.html", "/quiz.html", "/math.html", "/fruits.html", "/race.html"];
+const CACHE_NAME = 'race-game-v2';
+const urlsToCache = [
+  '/',
+  '/race.html',
+  '/public/race.js'
+];
 
-// أول مرة: نحفظ الصفحات على التليفون
-self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener("activate", e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((response) => {
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            cache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        });
+        return response || fetchPromise;
+      });
+    })
   );
 });
 
-// لو في نت: ناخد أحدث نسخة. لو مفيش: ناخد النسخة المحفوظة
-self.addEventListener("fetch", e => {
-  const u = new URL(e.request.url);
-  if (e.request.method !== "GET" || u.origin !== location.origin || u.pathname.startsWith("/socket.io")) return;
-  e.respondWith(
-    fetch(e.request)
-      .then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
-        return res;
-      })
-      .catch(() => caches.match(e.request).then(r => r || caches.match("/index.html")))
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
   );
 });
