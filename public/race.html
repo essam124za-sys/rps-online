@@ -1,156 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>سباق العربيات</title>
-<style>
-:root{--bg:#fdf6e3;--ink:#14213d;--card:#fff;--b:#ff5d8f;--a:#2ec4b6;--mut:#5b6478}
-@media (prefers-color-scheme:dark){:root{--bg:#14213d;--ink:#fdf6e3;--card:#22335c;--mut:#aab4cc;color-scheme:dark}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Segoe UI",Tahoma,"Noto Sans Arabic",sans-serif}
-h1{font-size:1.8rem;font-weight:800;margin:4px 0 12px}
-p{margin:0 0 12px}
-a{color:var(--mut)}
-input{font:inherit;width:100%;padding:12px;border:2px solid var(--ink);border-radius:14px;background:var(--card);color:var(--ink);font-size:1.15rem}
-button{font:inherit;color:var(--ink);cursor:pointer}
-.act{width:100%;background:var(--ink);color:var(--bg);border:0;border-radius:14px;padding:16px;font-size:1.2rem;font-weight:800}
-.alt{background:transparent;color:var(--ink);border:2px solid var(--ink)}
-button:disabled{opacity:.45;cursor:not-allowed}
-button:focus-visible,input:focus-visible{outline:3px solid var(--b);outline-offset:2px}
-[hidden]{display:none!important}
-
-/* ===== شاشة السباق ===== */
-#s-race{position:fixed;inset:0;display:flex;flex-direction:column;background:#0c1836}
-#top{display:flex;align-items:center;gap:6px;padding:calc(8px + env(safe-area-inset-top,0px)) 8px 8px;background:linear-gradient(#16306f,#0c1836);border-bottom:2px solid #060d1f;font-weight:800;color:#fff;font-size:clamp(.72rem,3.3vw,.9rem)}
-.pill{display:flex;align-items:center;gap:6px;background:linear-gradient(#17285c,#0d1838);border:2px solid #25407f;border-radius:14px;padding:3px 9px;box-shadow:inset 0 2px 5px rgba(0,0,0,.6);white-space:nowrap}
-#score{direction:ltr}
-.dot{width:15px;height:15px;border-radius:50%;display:inline-block}
-.dot.r{background:radial-gradient(circle at 35% 30%,#ff9b9b,#e41 60%,#900)}
-.dot.g{background:radial-gradient(circle at 35% 30%,#b6ffb0,#2c2 60%,#080)}
-.coin{width:20px;height:20px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#fff3a0,#ffc400 50%,#c98a00);border:2px solid #ffd54a;box-shadow:0 1px 3px rgba(0,0,0,.6)}
-.grp{display:flex;gap:6px;margin-inline-start:auto}
-.btn{border:2px solid #fff;border-radius:12px;padding:5px 9px;font:inherit;font-weight:800;white-space:nowrap;color:#12305f;background:linear-gradient(#e3f2ff,#7cc0ff 55%,#3f93f0);box-shadow:0 3px 0 #1d5fb8,0 6px 8px rgba(0,0,0,.45)}
-.btn.y{color:#6b2d00;background:linear-gradient(#ffe88a,#ffbb33 55%,#ff9a00);box-shadow:0 3px 0 #b85c00,0 6px 8px rgba(0,0,0,.45)}
-
-#track{flex:1;display:flex;position:relative;touch-action:none;user-select:none;-webkit-user-select:none;direction:ltr;background:#14331a}
-#track::before{content:"";position:absolute;top:0;left:0;right:0;height:34px;z-index:2;background:repeating-conic-gradient(#20242c 0 25%,#e9edf3 0 50%) 0 0/17px 17px;box-shadow:0 3px 6px rgba(0,0,0,.5)}
-.side{flex:none;width:9%;max-width:42px;background-color:#2c7a35;background-repeat:repeat-y;background-size:11px 44px,100% 110px}
-.s0{background-image:repeating-linear-gradient(to bottom,#d8343c 0 22px,#f4f4f4 22px 44px),radial-gradient(circle at 38% 40px,#3f9a48 0 13px,#1d5f27 14px 16px,transparent 17px);background-position:right 0,0 0}
-.s1{background-image:repeating-linear-gradient(to bottom,#2fa44a 0 22px,#f4f4f4 22px 44px),radial-gradient(circle at 62% 40px,#3f9a48 0 13px,#1d5f27 14px 16px,transparent 17px);background-position:left 0,0 0}
-.lane{flex:1;position:relative;overflow:hidden;background:linear-gradient(to bottom,#2d323d,#1b1f28)}
-.l0{border-left:3px solid #9aa3b2;border-right:4px double #c23a43}
-.l1{border-right:3px solid #9aa3b2;border-left:4px double #2f9e44}
-.lane::after{content:"";position:absolute;left:28%;right:28%;top:0;bottom:0;background:linear-gradient(to right,transparent,rgba(224,83,92,.16),transparent);pointer-events:none}
-.l1::after{background:linear-gradient(to right,transparent,rgba(63,174,90,.16),transparent)}
-.dash{position:absolute;left:50%;margin-left:-4px;top:0;bottom:0;width:8px;background-image:linear-gradient(to bottom,rgba(224,83,92,.8) 0 40px,transparent 40px 80px);background-size:8px 80px;background-repeat:repeat-y}
-.l1 .dash{background-image:linear-gradient(to bottom,rgba(63,174,90,.8) 0 40px,transparent 40px 80px)}
-.mid{flex:none;width:14px;background:linear-gradient(to right,#5b6270,#cfd5df 50%,#5b6270);box-shadow:0 0 0 2px #2a2f3a}
-.lname{position:absolute;top:46px;left:50%;transform:translateX(-50%);z-index:1;max-width:92%;text-align:center;padding:5px 14px;border-radius:18px;font-weight:800;color:#fff;font-size:1rem;background:linear-gradient(#f0606a,#c0222c);border:2px solid #ffb3b8;box-shadow:0 3px 0 #7d1118,0 5px 8px rgba(0,0,0,.4);direction:rtl}
-.lname::after{content:"";position:absolute;bottom:-9px;left:50%;margin-left:-8px;border:8px solid transparent;border-bottom:0;border-top-color:#c0222c}
-.l1 .lname{background:linear-gradient(#5fd27a,#1f8a3b);border-color:#c0f2cc;box-shadow:0 3px 0 #0f5a24,0 5px 8px rgba(0,0,0,.4)}
-.l1 .lname::after{border-top-color:#1f8a3b}
-.car{position:absolute;bottom:40px;left:50%;width:60px;height:110px;margin-left:-30px;transition:transform .08s linear;z-index:1}
-.hint{position:absolute;bottom:8px;left:8px;right:8px;text-align:left;color:#fff;font-weight:800;text-shadow:0 1px 4px #000;z-index:1}
-#overlay{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-size:4.2rem;font-weight:800;text-align:center;padding:16px;direction:rtl;white-space:pre-line;z-index:3;color:#ffd24a;background:none;filter:drop-shadow(0 3px 0 #8a4a00) drop-shadow(0 6px 10px rgba(0,0,0,.65))}
-#overlay.small{font-size:2rem}
-#after{position:absolute;right:14px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:4}
-#after .act{width:auto;padding:13px 28px;font-size:1.3rem;color:#fff;border:3px solid #fff;border-radius:18px;background:linear-gradient(#ffc04d,#ff8a00 60%,#f06a00);text-shadow:0 2px 0 #8a3a00;box-shadow:0 0 0 3px #cbd5e1,0 5px 0 #b34700,0 10px 14px rgba(0,0,0,.5)}
-
-/* ===== القوايم ===== */
-.modal{position:fixed;inset:0;z-index:20;background:var(--bg);overflow:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 32px}
-.modal .in{max-width:460px;margin:0 auto;text-align:center}
-.x{background:transparent;border:2px solid var(--ink);border-radius:10px;padding:4px 12px;font-weight:800;float:left}
-.setup{display:grid;gap:10px;margin-top:16px;clear:both}
-.setup label{text-align:start;font-weight:800}
-.err{color:var(--b);font-weight:800;min-height:1.5em;margin:0}
-.code{font-size:4rem;font-weight:800;letter-spacing:.2em;direction:ltr;margin:10px 0}
-.gi{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:10px 12px;margin-bottom:10px;text-align:start}
-.gcar{width:40px;flex:none;display:grid;place-items:center}
-.ginfo{flex:1}
-.sbar{height:8px;border-radius:6px;background:var(--bg);border:1px solid var(--ink);overflow:hidden;margin:4px 0}
-.sbar i{display:block;height:100%;background:var(--a)}
-.gi button{border:2px solid var(--ink);background:transparent;border-radius:12px;padding:8px 10px;font-weight:800;white-space:nowrap}
-.gi small{color:var(--mut)}
-</style>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; background: #0c1836; display: flex; justify-content: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+        #track { display: flex; width: 100%; max-width: 600px; height: 100%; background: #333; position: relative; border-left: 5px dashed #fff; border-right: 5px dashed #fff; }
+        .lane { flex: 1; position: relative; }
+        .lane:first-child { border-left: 2px solid red; background: #a83232; }
+        .lane:last-child { border-right: 2px solid green; background: #32a852; }
+        .car { width: 50px; height: 100px; position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); border-radius: 10px; }
+        #player-car { background: linear-gradient(to bottom, #ff3333, #800000); box-shadow: 0 0 10px yellow; }
+        #ai-car { background: linear-gradient(to bottom, #33ff33, #008000); box-shadow: 0 0 10px white; }
+        .label { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
+    </style>
 </head>
 <body>
-<section id="s-race">
-  <div id="top">
-    <span class="pill" id="score"></span>
-    <span class="pill" id="coins"></span>
-    <div class="grp">
-      <button class="btn" id="who">👥 العب مع مين؟</button>
-      <button class="btn y" id="gbtn">🚗 الجراج</button>
+
+<div id="track">
+    <div class="lane">
+        <div class="label">أنت</div>
+        <div id="player-car" class="car"></div>
     </div>
-  </div>
-  <div id="track">
-    <div class="side s0" id="s0"></div>
-    <div class="lane l0" id="l0" data-i="0"><div class="dash" id="d0"></div><div class="lname" id="n0"></div><div class="car" id="c0"></div><div class="hint" id="h0"></div></div>
-    <div class="mid"></div>
-    <div class="lane l1" id="l1" data-i="1"><div class="dash" id="d1"></div><div class="lname" id="n1"></div><div class="car" id="c1"></div><div class="hint" id="h1"></div></div>
-    <div class="side s1" id="s1"></div>
-    <div id="overlay"></div>
-  </div>
-  <div id="after"><button class="act" id="again">ابدأ السباق</button></div>
-</section>
-
-<div class="modal" id="menu" hidden>
-  <div class="in">
-    <button class="x" id="mx">✕</button>
-    <section class="setup" id="s-mode">
-      <h1>العب مع مين؟ 🏎️</h1>
-      <p>دوس على الشاشة بأسرع ما تقدر، وكل ضغطة بتحرّك عربيتك. أول واحد يوصل لخط النهاية يكسب!</p>
-      <button class="act" id="m-same">📱 إحنا الاتنين على نفس التليفون</button>
-      <button class="act" id="m-online">🌐 كل واحد في تليفون (محتاج نت)</button>
-      <button class="act" id="m-ai">🤖 ضد الكمبيوتر</button>
-      <p><a href="/">← رجوع للألعاب</a></p>
-    </section>
-    <section class="setup" id="s-diff" hidden>
-      <h1>اختار الصعوبة</h1>
-      <button class="act" data-d="easy">سهل 🟢 (من غير عملات)</button>
-      <button class="act" data-d="mid">متوسط 🟡 (عملة لو كسبت)</button>
-      <button class="act" data-d="hard">صعب 🔴 (عملة لو كسبت)</button>
-      <button class="act alt" id="diff-back">رجوع</button>
-    </section>
-    <section class="setup" id="s-name" hidden>
-      <h1>كل واحد في تليفون</h1>
-      <label for="name">اسمك إيه؟</label>
-      <input id="name" maxlength="12" placeholder="مثلاً: برعي" autocomplete="off">
-      <button class="act" id="create">إنشاء غرفة جديدة</button>
-      <label for="code">أو ادخل غرفة صاحبك بالكود</label>
-      <input id="code" inputmode="numeric" maxlength="4" placeholder="مثلاً: 4821" autocomplete="off">
-      <button class="act alt" id="join">دخول الغرفة</button>
-      <button class="act alt" id="name-back">رجوع</button>
-      <p class="err" id="err"></p>
-    </section>
-    <section class="setup" id="s-wait" hidden>
-      <p>كود غرفتك</p>
-      <div class="code" id="roomcode"></div>
-      <p>ابعت الكود لصاحبك واستنى لحد ما يدخل...</p>
-    </section>
-  </div>
-</div>
-
-<div class="modal" id="garage" hidden>
-  <div class="in">
-    <button class="x" id="gx">✕</button>
-    <h1>🚗 الجراج</h1>
-    <p>عملاتك: <b id="gcoins"></b></p>
-    <div id="glist"></div>
-    <p><small>العربية الأغلى أسرع. بتكسب عملات لما تكسب: ضد الكمبيوتر (متوسط أو صعب) = 1، على نفس التليفون = 2، أونلاين = 2. وأونلاين كل العربيات بنفس السرعة عشان اللعب يبقى عادل.</small></p>
-  </div>
+    <div class="lane">
+        <div class="label">الكمبيوتر</div>
+        <div id="ai-car" class="car"></div>
+    </div>
 </div>
 
 <script>
-// لو حصل خطأ في الكود، بيظهر فوق الشاشة عشان نعرف نصلّحه
-window.addEventListener("error", function (e) {
-  var d = document.createElement("div");
-  d.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99;background:#b00020;color:#fff;padding:8px;font:14px/1.4 monospace;direction:ltr";
-  d.textContent = "Error: " + e.message + " (line " + e.lineno + ")";
-  document.body.appendChild(d);
-});
+    console.log("تم تحميل العربيات بنجاح");
 </script>
-<script src="/public/race.js"></script>
+
 </body>
 </html>
