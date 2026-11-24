@@ -1,35 +1,351 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <style>
-        body { margin: 0; background: #0c1836; display: flex; justify-content: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
-        #track { display: flex; width: 100%; max-width: 600px; height: 100%; background: #333; position: relative; border-left: 5px dashed #fff; border-right: 5px dashed #fff; }
-        .lane { flex: 1; position: relative; }
-        .lane:first-child { border-left: 2px solid red; background: #a83232; }
-        .lane:last-child { border-right: 2px solid green; background: #32a852; }
-        .car { width: 50px; height: 100px; position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); border-radius: 10px; }
-        #player-car { background: linear-gradient(to bottom, #ff3333, #800000); box-shadow: 0 0 10px yellow; }
-        #ai-car { background: linear-gradient(to bottom, #33ff33, #008000); box-shadow: 0 0 10px white; }
-        .label { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; font-weight: bold; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 5px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>سباق العربيات</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; background: #0c1836;
+      font-family: system-ui, "Segoe UI", Tahoma, sans-serif;
+      touch-action: manipulation;
+    }
+    #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+
+    /* الشريط العلوي */
+    #top {
+      direction: ltr;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 6px; padding: 10px 8px;
+      background: linear-gradient(180deg, #1b3168, #0e1c40);
+      border-bottom: 2px solid #2b4a8f;
+      z-index: 10;
+    }
+    .grp { display: flex; gap: 6px; align-items: center; }
+    .btn3d {
+      border: 2px solid #fff; border-radius: 12px;
+      padding: 6px 10px; font-weight: 800; font-size: 13px;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-garage {
+      background: linear-gradient(180deg, #ffe27a, #ff9d00);
+      color: #4a1d00; box-shadow: 0 3px 0 #b85c00;
+    }
+    .btn-who {
+      background: linear-gradient(180deg, #e0f2fe, #93c5fd);
+      color: #0c2b5e; box-shadow: 0 3px 0 #2563eb;
+    }
+    .pill {
+      display: flex; align-items: center; gap: 5px;
+      background: #0a142e; border: 2px solid #2a4685;
+      color: #fff; border-radius: 14px; padding: 4px 10px;
+      font-weight: 800; font-size: 14px;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot.r { background: radial-gradient(circle at 30% 30%, #ff8a8a, #dc2626); }
+    .dot.g { background: radial-gradient(circle at 30% 30%, #86efac, #16a34a); }
+    .coin {
+      width: 16px; height: 16px; border-radius: 50%; display: inline-block;
+      background: radial-gradient(circle at 35% 35%, #fef08a, #eab308);
+      border: 1px solid #fff;
+    }
+
+    /* خط النهاية */
+    #finish {
+      height: 26px; width: 100%;
+      background-image:
+        linear-gradient(45deg, #111 25%, transparent 25%),
+        linear-gradient(-45deg, #111 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #111 75%),
+        linear-gradient(-45deg, transparent 75%, #111 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      background-color: #fff;
+      border-bottom: 3px solid #000;
+      z-index: 5;
+    }
+
+    /* حلبة السباق */
+    #track {
+      direction: ltr;
+      flex: 1; display: flex; position: relative;
+      overflow: hidden; background: #1e242d;
+    }
+    .curb {
+      width: 14px; flex: none;
+      background-size: 14px 36px;
+    }
+    .curb.left {
+      background-image: repeating-linear-gradient(180deg, #dc2626 0 18px, #f8fafc 18px 36px);
+      border-left: 6px solid #15803d;
+    }
+    .curb.right {
+      background-image: repeating-linear-gradient(180deg, #16a34a 0 18px, #f8fafc 18px 36px);
+      border-right: 6px solid #15803d;
+    }
+    .divider {
+      width: 14px; flex: none;
+      background: linear-gradient(90deg, #dc2626 0 2px, #64748b 2px 5px, #cbd5e1 5px 9px, #64748b 9px 12px, #16a34a 12px 14px);
+    }
+    .lane {
+      flex: 1; position: relative;
+      background: linear-gradient(180deg, #272e3a, #191e26);
+    }
+    .lane.p-lane { box-shadow: inset 0 0 40px rgba(220, 38, 38, 0.25); }
+    .lane.ai-lane { box-shadow: inset 0 0 40px rgba(22, 163, 74, 0.25); }
+
+    /* الخط المتقطع */
+    .dash {
+      position: absolute; top: 0; bottom: 0; left: 50%;
+      width: 6px; margin-left: -3px;
+      background-size: 6px 56px;
+    }
+    .p-lane .dash {
+      background-image: repeating-linear-gradient(180deg, rgba(239,68,68,0.65) 0 24px, transparent 24px 56px);
+    }
+    .ai-lane .dash {
+      background-image: repeating-linear-gradient(180deg, rgba(34,197,94,0.65) 0 24px, transparent 24px 56px);
+    }
+    .running .dash, .running .curb { animation: moveRoad 0.35s linear infinite; }
+    @keyframes moveRoad {
+      from { background-position-y: 0; }
+      to { background-position-y: 56px; }
+    }
+
+    /* شارات الأسماء */
+    .badge {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      padding: 4px 14px; border-radius: 20px; color: #fff;
+      font-weight: 800; font-size: 14px; white-space: nowrap;
+      border: 2px solid rgba(255,255,255,0.7); z-index: 4;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .badge.red { background: linear-gradient(180deg, #ef4444, #991b1b); }
+    .badge.green { background: linear-gradient(180deg, #22c55e, #166534); }
+
+    /* العربيات */
+    .car {
+      position: absolute; left: 50%; bottom: 10%;
+      width: 64px; height: 118px; margin-left: -32px;
+      transition: bottom 0.08s linear;
+      z-index: 6; pointer-events: none;
+    }
+
+    /* النص في المنتصف */
+    #msg {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center; text-align: center;
+      color: #fff; font-size: 30px; font-weight: 900; padding: 0 16px;
+      text-shadow: 0 0 18px rgba(250, 204, 21, 0.9), 0 4px 8px #000;
+      pointer-events: none; z-index: 8;
+    }
+
+    /* زرار ابدأ والتلميح */
+    #startBtn {
+      position: absolute; right: 16px; bottom: 22px; z-index: 9;
+      background: linear-gradient(180deg, #fde047, #f97316);
+      color: #fff; text-shadow: 0 2px 3px rgba(0,0,0,0.6);
+      border: 3px solid #fff; border-radius: 16px;
+      padding: 12px 24px; font-size: 18px; font-weight: 900;
+      box-shadow: 0 5px 0 #c2410c, 0 8px 18px rgba(0,0,0,0.5);
+      cursor: pointer;
+    }
+    #startBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #c2410c; }
+    #hint {
+      position: absolute; left: 14px; bottom: 16px; z-index: 7;
+      color: #fff; font-size: 14px; font-weight: 800;
+      text-shadow: 0 2px 6px #000; pointer-events: none;
+    }
+
+    /* شرر عند الضغط */
+    .spark {
+      position: fixed; width: 7px; height: 7px; border-radius: 50%;
+      background: radial-gradient(circle, #fff, #facc15, #f97316);
+      pointer-events: none; z-index: 99;
+      animation: fly 0.4s ease-out forwards;
+    }
+    @keyframes fly {
+      to { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+    }
+  </style>
 </head>
 <body>
+<div id="app">
+  <div id="top">
+    <div class="grp">
+      <button class="btn3d btn-garage" onclick="alert('الجراج هنضيفه في الخطوة الجاية!')">🚗 الجراج</button>
+      <button class="btn3d btn-who" onclick="alert('وضع اللعب مع صاحبك في الخطوة الجاية!')">👥 العب مع مين؟</button>
+    </div>
+    <div class="grp">
+      <div class="pill"><span id="coins">60</span><span class="coin"></span></div>
+      <div class="pill"><span class="dot r"></span><span id="score">0 : 0</span><span class="dot g"></span></div>
+    </div>
+  </div>
 
-<div id="track">
-    <div class="lane">
-        <div class="label">أنت</div>
-        <div id="player-car" class="car"></div>
+  <div id="finish"></div>
+
+  <div id="track">
+    <div class="curb left"></div>
+
+    <!-- حارة اللاعب -->
+    <div class="lane p-lane">
+      <div class="dash"></div>
+      <div class="badge red">أنت 👤</div>
+      <div class="car" id="pCar">
+        <svg viewBox="0 0 64 120" width="64" height="118" style="overflow:visible">
+          <defs>
+            <linearGradient id="beam1" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stop-color="#fff" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="redCar" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#991b1b"/>
+              <stop offset="50%" stop-color="#ef4444"/>
+              <stop offset="100%" stop-color="#991b1b"/>
+            </linearGradient>
+          </defs>
+          <polygon points="10,12 0,-55 28,-55 24,12" fill="url(#beam1)"/>
+          <polygon points="40,12 36,-55 64,-55 54,12" fill="url(#beam1)"/>
+          <ellipse cx="32" cy="64" rx="28" ry="50" fill="rgba(0,0,0,0.45)"/>
+          <rect x="4" y="18" width="9" height="22" rx="3" fill="#111"/>
+          <rect x="51" y="18" width="9" height="22" rx="3" fill="#111"/>
+          <rect x="4" y="76" width="9" height="24" rx="3" fill="#111"/>
+          <rect x="51" y="76" width="9" height="24" rx="3" fill="#111"/>
+          <path d="M12 22 Q32 4 52 22 L54 96 Q54 110 42 112 L22 112 Q10 110 10 96 Z" fill="url(#redCar)" stroke="#fca5a5" stroke-width="1.5"/>
+          <path d="M17 42 Q32 32 47 42 L44 62 Q32 58 20 62 Z" fill="#1e293b"/>
+          <path d="M20 76 L44 76 L42 94 L22 94 Z" fill="#0f172a"/>
+          <rect x="14" y="106" width="12" height="4" rx="2" fill="#ff3b3b"/>
+          <rect x="38" y="106" width="12" height="4" rx="2" fill="#ff3b3b"/>
+        </svg>
+      </div>
     </div>
-    <div class="lane">
-        <div class="label">الكمبيوتر</div>
-        <div id="ai-car" class="car"></div>
+
+    <div class="divider"></div>
+
+    <!-- حارة الكمبيوتر -->
+    <div class="lane ai-lane">
+      <div class="dash"></div>
+      <div class="badge green">الكمبيوتر 🤖</div>
+      <div class="car" id="aiCar">
+        <svg viewBox="0 0 64 120" width="64" height="118" style="overflow:visible">
+          <defs>
+            <linearGradient id="greenCar" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#14532d"/>
+              <stop offset="50%" stop-color="#4ade80"/>
+              <stop offset="100%" stop-color="#14532d"/>
+            </linearGradient>
+          </defs>
+          <polygon points="10,12 0,-55 28,-55 24,12" fill="url(#beam1)"/>
+          <polygon points="40,12 36,-55 64,-55 54,12" fill="url(#beam1)"/>
+          <ellipse cx="32" cy="64" rx="28" ry="50" fill="rgba(0,0,0,0.45)"/>
+          <rect x="3" y="16" width="10" height="22" rx="3" fill="#111"/>
+          <rect x="51" y="16" width="10" height="22" rx="3" fill="#111"/>
+          <rect x="2" y="74" width="11" height="26" rx="3" fill="#111"/>
+          <rect x="51" y="74" width="11" height="26" rx="3" fill="#111"/>
+          <rect x="8" y="8" width="48" height="10" rx="3" fill="#22c55e"/>
+          <path d="M24 14 L40 14 L48 56 L46 102 L18 102 L16 56 Z" fill="url(#greenCar)" stroke="#bbf7d0" stroke-width="1.5"/>
+          <ellipse cx="32" cy="60" rx="8" ry="13" fill="#0f172a"/>
+          <rect x="10" y="98" width="44" height="10" rx="3" fill="#166534"/>
+        </svg>
+      </div>
     </div>
+
+    <div class="curb right"></div>
+
+    <div id="msg">اضغط «ابدأ السباق» 🏁</div>
+    <div id="hint">دوس في أي مكان بسرعة 👆</div>
+    <button id="startBtn">ابدأ السباق</button>
+  </div>
 </div>
 
 <script>
-    console.log("تم تحميل العربيات بنجاح");
-</script>
+  let pPos = 10, aiPos = 10;
+  let running = false;
+  let pScore = 0, aiScore = 0, coins = 60;
+  let aiTimer = null;
 
+  const track = document.getElementById("track");
+  const pCar = document.getElementById("pCar");
+  const aiCar = document.getElementById("aiCar");
+  const msg = document.getElementById("msg");
+  const startBtn = document.getElementById("startBtn");
+  const scoreEl = document.getElementById("score");
+  const coinsEl = document.getElementById("coins");
+
+  function updatePositions() {
+    pCar.style.bottom = pPos + "%";
+    aiCar.style.bottom = aiPos + "%";
+  }
+
+  function spawnSparks(x, y) {
+    for (let i = 0; i < 6; i++) {
+      const s = document.createElement("div");
+      s.className = "spark";
+      s.style.left = x + "px";
+      s.style.top = y + "px";
+      s.style.setProperty("--x", (Math.random() - 0.5) * 70 + "px");
+      s.style.setProperty("--y", (Math.random() - 0.5) * 70 + "px");
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 400);
+    }
+  }
+
+  function finishRace(winner) {
+    running = false;
+    clearInterval(aiTimer);
+    track.classList.remove("running");
+    if (winner === "p") {
+      pScore++;
+      coins += 5;
+      msg.textContent = "🏆 كسبت السباق! (+5 عملات)";
+    } else {
+      aiScore++;
+      msg.textContent = "🤖 الكمبيوتر كسب! جرب تاني";
+    }
+    scoreEl.textContent = pScore + " : " + aiScore;
+    coinsEl.textContent = coins;
+    startBtn.textContent = "العب تاني";
+    startBtn.style.display = "block";
+  }
+
+  startBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    pPos = 10; aiPos = 10;
+    updatePositions();
+    startBtn.style.display = "none";
+
+    let count = 3;
+    msg.textContent = count;
+    const cd = setInterval(() => {
+      count--;
+      if (count > 0) {
+        msg.textContent = count;
+      } else {
+        clearInterval(cd);
+        msg.textContent = "انطلق! 🔥";
+        running = true;
+        track.classList.add("running");
+        setTimeout(() => { if (running) msg.textContent = ""; }, 600);
+
+        aiTimer = setInterval(() => {
+          if (!running) return;
+          aiPos += 1.4 + Math.random() * 1.3;
+          if (aiPos >= 80) { aiPos = 80; updatePositions(); finishRace("ai"); }
+          else updatePositions();
+        }, 160);
+      }
+    }, 600);
+  });
+
+  track.addEventListener("pointerdown", (e) => {
+    if (!running || e.target === startBtn) return;
+    pPos += 2.6;
+    spawnSparks(e.clientX, e.clientY);
+    if (pPos >= 80) { pPos = 80; updatePositions(); finishRace("p"); }
+    else updatePositions();
+  });
+</script>
 </body>
 </html>
