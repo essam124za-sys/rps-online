@@ -1,407 +1,174 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>سباق العربيات</title>
-  <style>
-    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
-    html, body {
-      margin: 0; padding: 0; width: 100%; height: 100%;
-      overflow: hidden; background: #0b1633;
-      font-family: system-ui, "Segoe UI", Tahoma, "Noto Sans Arabic", sans-serif;
-      touch-action: manipulation;
-    }
-    #app { display: flex; flex-direction: column; width: 100%; height: 100%; position: relative; }
-
-    /* ===== الشريط العلوي ===== */
-    #top {
-      direction: ltr;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 6px; padding: 10px 8px;
-      background: linear-gradient(180deg, #213d7a 0%, #12244d 60%, #0b1736 100%);
-      border-bottom: 2px solid #2e529e;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-      z-index: 20;
-    }
-    .grp { display: flex; gap: 6px; align-items: center; }
-    .btn3d {
-      position: relative; overflow: hidden;
-      border: 2px solid #fff; border-radius: 14px;
-      padding: 6px 11px; font-weight: 900; font-size: 13px;
-      cursor: pointer; white-space: nowrap;
-      display: flex; align-items: center; gap: 5px;
-      transition: transform 0.08s;
-    }
-    .btn3d::before {
-      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 48%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.05));
-      pointer-events: none;
-    }
-    .btn3d:active { transform: translateY(2px); }
-    .btn-garage {
-      background: linear-gradient(180deg, #ffea75 0%, #ff9900 75%, #e65100 100%);
-      color: #4a1200; border-color: #fff3b0;
-      box-shadow: 0 3px 0 #9a3412, 0 4px 10px rgba(0,0,0,0.5);
-    }
-    .btn-who {
-      background: linear-gradient(180deg, #ffffff 0%, #dbeafe 65%, #93c5fd 100%);
-      color: #0f2c5c; border-color: #e0f2fe;
-      box-shadow: 0 3px 0 #2563eb, 0 4px 10px rgba(0,0,0,0.5);
-    }
-    .pill {
-      display: flex; align-items: center; gap: 6px;
-      background: linear-gradient(180deg, #0b1633, #152852);
-      border: 2px solid #35589e;
-      color: #fff; border-radius: 14px; padding: 4px 10px;
-      font-weight: 900; font-size: 15px;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.4);
-    }
-    .dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px currentColor; }
-    .dot.r { color: #ef4444; background: radial-gradient(circle at 30% 30%, #fca5a5, #dc2626 65%, #7f1d1d); }
-    .dot.g { color: #22c55e; background: radial-gradient(circle at 30% 30%, #bbf7d0, #16a34a 65%, #14532d); }
-    .coin {
-      width: 19px; height: 19px; border-radius: 50%; display: inline-block;
-      background: radial-gradient(circle at 35% 30%, #fef9c3 0%, #facc15 45%, #ca8a04 100%);
-      border: 1.5px solid #fef08a;
-      box-shadow: inset 0 0 0 2px rgba(161,98,7,0.45), 0 0 8px rgba(250,204,21,0.6);
-    }
-
-    /* ===== خط النهاية المجسّم ===== */
-    #finish {
-      height: 28px; width: 100%; position: relative; z-index: 15;
-      background-color: #e2e8f0;
-      background-image:
-        linear-gradient(45deg, #1e293b 25%, transparent 25%),
-        linear-gradient(-45deg, #1e293b 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #1e293b 75%),
-        linear-gradient(-45deg, transparent 75%, #1e293b 75%);
-      background-size: 20px 20px;
-      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
-      box-shadow: inset 0 4px 8px rgba(255,255,255,0.4), inset 0 -4px 8px rgba(0,0,0,0.5), 0 6px 14px rgba(0,0,0,0.65);
-      border-bottom: 2px solid #0f172a;
-    }
-
-    /* ===== الحلبة بالكامل ===== */
-    #track {
-      direction: ltr;
-      flex: 1; display: flex; position: relative;
-      overflow: hidden; background: #1c222b;
-    }
-
-    /* المدرجات والأشجار على الجوانب */
-    .side-env {
-      width: 28px; flex: none; position: relative; z-index: 4;
-      background: linear-gradient(90deg, #1e4620, #3f7d20, #2c5e1a);
-      overflow: hidden;
-    }
-    .side-env-inner {
-      position: absolute; inset: -180px 0 0 0;
-      background-repeat: repeat-y;
-      background-size: 28px 180px;
-      /* رسم أشجار ومدرجات بالجمهور بـ SVG */
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='180' viewBox='0 0 28 180'%3E%3Crect width='28' height='180' fill='%232f6b24'/%3E%3C!-- شجرة --%3E%3Ccircle cx='12' cy='22' r='13' fill='%231b4d16'/%3E%3Ccircle cx='15' cy='18' r='10' fill='%233d8c2a'/%3E%3Ccircle cx='10' cy='26' r='8' fill='%234ea832'/%3E%3C!-- مدرج جمهور --%3E%3Crect x='2' y='48' width='22' height='84' rx='3' fill='%23475569' stroke='%2394a3b8' stroke-width='2'/%3E%3Crect x='5' y='52' width='16' height='76' fill='%23334155'/%3E%3C!-- رؤوس الجمهور --%3E%3Ccircle cx='10' cy='60' r='3.5' fill='%23ef4444'/%3E%3Ccircle cx='17' cy='64' r='3.5' fill='%233b82f6'/%3E%3Ccircle cx='11' cy='72' r='3.5' fill='%23facc15'/%3E%3Ccircle cx='17' cy='78' r='3.5' fill='%23f97316'/%3E%3Ccircle cx='10' cy='86' r='3.5' fill='%2322c55e'/%3E%3Ccircle cx='17' cy='92' r='3.5' fill='%23ec4899'/%3E%3Ccircle cx='11' cy='100' r='3.5' fill='%2338bdf8'/%3E%3Ccircle cx='16' cy='108' r='3.5' fill='%23fbbf24'/%3E%3Ccircle cx='10' cy='118' r='3.5' fill='%23a855f7'/%3E%3C!-- شجرة سفلية --%3E%3Ccircle cx='14' cy='154' r='14' fill='%231b4d16'/%3E%3Ccircle cx='12' cy='150' r='10' fill='%234ea832'/%3E%3C/svg%3E");
-    }
-
-    /* الرصيف الجانبي (أحمر وأبيض / أخضر وأبيض) */
-    .curb {
-      width: 13px; flex: none; z-index: 5;
-      background-size: 13px 38px;
-      box-shadow: inset 2px 0 3px rgba(0,0,0,0.4), inset -2px 0 3px rgba(0,0,0,0.4);
-    }
-    .curb.left {
-      background-image: repeating-linear-gradient(180deg, #dc2626 0 19px, #f1f5f9 19px 38px);
-    }
-    .curb.right {
-      background-image: repeating-linear-gradient(180deg, #16a34a 0 19px, #f1f5f9 19px 38px);
-    }
-
-    /* الحاجز المعدني في المنتصف */
-    .divider {
-      width: 24px; flex: none; position: relative; z-index: 6;
-      background:
-        repeating-linear-gradient(180deg, transparent 0 58px, rgba(0,0,0,0.45) 58px 60px, rgba(255,255,255,0.4) 60px 62px),
-        linear-gradient(90deg,
-          #ef4444 0 3px, #1e293b 3px 5px,
-          #64748b 5px 8px, #cbd5e1 8px 14px, #94a3b8 14px 19px,
-          #1e293b 19px 21px, #22c55e 21px 24px);
-      box-shadow: -4px 0 14px rgba(239,68,68,0.45), 4px 0 14px rgba(34,197,94,0.45);
-    }
-
-    /* حارات الأسفلت مع آثار الكاوتش */
-    .lane {
-      flex: 1; position: relative; overflow: hidden;
-      background-color: #232933;
-    }
-    .lane.p-lane {
-      background-image:
-        linear-gradient(90deg, transparent 18%, rgba(220,38,38,0.13) 26%, rgba(220,38,38,0.13) 34%, transparent 42%, transparent 58%, rgba(220,38,38,0.13) 66%, rgba(220,38,38,0.13) 74%, transparent 82%),
-        radial-gradient(ellipse at 50% 50%, rgba(220,38,38,0.18), transparent 75%),
-        linear-gradient(180deg, #2a313d 0%, #1c222b 100%);
-    }
-    .lane.ai-lane {
-      background-image:
-        linear-gradient(90deg, transparent 18%, rgba(22,163,74,0.13) 26%, rgba(22,163,74,0.13) 34%, transparent 42%, transparent 58%, rgba(22,163,74,0.13) 66%, rgba(22,163,74,0.13) 74%, transparent 82%),
-        radial-gradient(ellipse at 50% 50%, rgba(22,163,74,0.18), transparent 75%),
-        linear-gradient(180deg, #2a313d 0%, #1c222b 100%);
-    }
-
-    /* الخط المتقطع */
-    .dash {
-      position: absolute; top: 0; bottom: 0; left: 50%;
-      width: 6px; margin-left: -3px;
-      background-size: 6px 64px;
-    }
-    .p-lane .dash {
-      background-image: repeating-linear-gradient(180deg, rgba(239,68,68,0.65) 0 26px, transparent 26px 64px);
-    }
-    .ai-lane .dash {
-      background-image: repeating-linear-gradient(180deg, rgba(34,197,94,0.65) 0 26px, transparent 26px 64px);
-    }
-
-    /* حركة الطريق أثناء السباق */
-    .running .dash { animation: moveDash 0.32s linear infinite; }
-    .running .curb { animation: moveCurb 0.25s linear infinite; }
-    .running .side-env-inner { animation: moveEnv 0.9s linear infinite; }
-    @keyframes moveDash { from { background-position-y: 0; } to { background-position-y: 64px; } }
-    @keyframes moveCurb { from { background-position-y: 0; } to { background-position-y: 38px; } }
-    @keyframes moveEnv  { from { transform: translateY(0); } to { transform: translateY(180px); } }
-
-    /* إضاءة كشافات الملعب الجانبية */
-    .floodlight {
-      position: absolute; width: 160px; height: 140px; pointer-events: none; z-index: 7;
-    }
-    .fl-l1 { top: 14%; left: 10px; background: radial-gradient(circle at 12% 35%, rgba(255,255,255,0.95) 0%, rgba(255,248,220,0.4) 18%, transparent 68%); }
-    .fl-l2 { top: 55%; left: 10px; background: radial-gradient(circle at 12% 35%, rgba(255,255,255,0.9) 0%, rgba(255,248,220,0.35) 18%, transparent 68%); }
-    .fl-r1 { top: 14%; right: 10px; background: radial-gradient(circle at 88% 35%, rgba(255,255,255,0.95) 0%, rgba(255,248,220,0.4) 18%, transparent 68%); }
-    .fl-r2 { top: 55%; right: 10px; background: radial-gradient(circle at 88% 35%, rgba(255,255,255,0.9) 0%, rgba(255,248,220,0.35) 18%, transparent 68%); }
-
-    /* دخان خفيف أسفل الشاشة */
-    #bottomFog {
-      position: absolute; left: 0; right: 0; bottom: 0; height: 110px;
-      background:
-        radial-gradient(ellipse at 25% 100%, rgba(203,213,225,0.32), transparent 65%),
-        radial-gradient(ellipse at 75% 100%, rgba(203,213,225,0.28), transparent 65%),
-        linear-gradient(0deg, rgba(15,23,42,0.7) 0%, transparent 100%);
-      pointer-events: none; z-index: 8;
-    }
-
-    /* شارات الأسماء بسهم سفلي */
-    .badge {
-      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-      padding: 4px 14px; border-radius: 22px; color: #fff;
-      font-weight: 900; font-size: 14px; white-space: nowrap;
-      display: flex; align-items: center; gap: 6px;
-      border: 2px solid rgba(255,255,255,0.75); z-index: 9;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.55);
-    }
-    .badge::after {
-      content: ""; position: absolute; bottom: -9px; left: 50%; margin-left: -7px;
-      border-left: 7px solid transparent; border-right: 7px solid transparent;
-    }
-    .badge.red {
-      background: linear-gradient(180deg, #f87171 0%, #dc2626 55%, #991b1b 100%);
-      box-shadow: 0 0 14px rgba(239,68,68,0.55), 0 4px 10px rgba(0,0,0,0.5);
-    }
-    .badge.red::after { border-top: 8px solid #991b1b; }
-    .badge.green {
-      background: linear-gradient(180deg, #4ade80 0%, #16a34a 55%, #166534 100%);
-      box-shadow: 0 0 14px rgba(34,197,94,0.55), 0 4px 10px rgba(0,0,0,0.5);
-    }
-    .badge.green::after { border-top: 8px solid #166534; }
-
-    /* العربيات */
-    .car {
-      position: absolute; left: 50%; bottom: 14%;
-      width: 72px; height: 136px; margin-left: -36px;
-      transition: bottom 0.08s linear;
-      z-index: 10; pointer-events: none;
-      filter: drop-shadow(0 10px 10px rgba(0,0,0,0.65));
-    }
-
-    /* النص الذهبي في المنتصف */
-    #msg {
-      direction: rtl;
-      position: absolute; inset: 0; display: flex;
-      align-items: center; justify-content: center; text-align: center;
-      color: #fff; font-size: 32px; font-weight: 900; padding: 0 16px;
-      text-shadow:
-        0 0 22px rgba(250, 204, 21, 0.95),
-        0 0 40px rgba(249, 115, 22, 0.75),
-        0 3px 0 #7c2d12,
-        0 5px 12px rgba(0,0,0,0.9);
-      pointer-events: none; z-index: 12;
-    }
-
-    /* زرار ابدأ السباق 3D */
-    #startBtn {
-      position: absolute; right: 16px; bottom: 20px; z-index: 14;
-      background: linear-gradient(180deg, #fef08a 0%, #facc15 35%, #f97316 85%, #ea580c 100%);
-      color: #fff;
-      text-shadow: 0 2px 3px rgba(124,45,18,0.9);
-      border: 3px solid #fff; border-radius: 18px;
-      padding: 12px 26px; font-size: 20px; font-weight: 900;
-      box-shadow: inset 0 3px 6px rgba(255,255,255,0.7), 0 6px 0 #b45309, 0 10px 22px rgba(0,0,0,0.65);
-      cursor: pointer;
-    }
-    #startBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #b45309; }
-
-    #hint {
-      direction: rtl;
-      position: absolute; left: 14px; bottom: 16px; z-index: 13;
-      color: #fff; font-size: 15px; font-weight: 900;
-      text-shadow: 0 2px 6px #000, 0 0 10px rgba(0,0,0,0.8);
-      pointer-events: none;
-    }
-
-    /* شرر طائر في الجو + شرر عند الضغط */
-    .ambient-spark {
-      position: absolute; width: 4px; height: 4px; border-radius: 50%;
-      background: #fde047; box-shadow: 0 0 8px #f97316;
-      pointer-events: none; z-index: 11; opacity: 0.8;
-      animation: floatSpark 3.5s linear infinite;
-    }
-    @keyframes floatSpark {
-      0% { transform: translateY(0) scale(0.6); opacity: 0; }
-      20% { opacity: 0.9; }
-      80% { opacity: 0.7; }
-      100% { transform: translateY(-160px) scale(1.2); opacity: 0; }
-    }
-    .tap-spark {
-      position: fixed; width: 7px; height: 7px; border-radius: 50%;
-      background: radial-gradient(circle, #fff, #facc15, #f97316);
-      box-shadow: 0 0 10px #f97316;
-      pointer-events: none; z-index: 99;
-      animation: fly 0.42s ease-out forwards;
-    }
-    @keyframes fly {
-      to { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>سباق العربيات</title>
+<style>
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1633;font-family:system-ui,Tahoma,sans-serif;touch-action:manipulation}
+#app{display:flex;flex-direction:column;width:100%;height:100%}
+#top{direction:ltr;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 8px;background:linear-gradient(180deg,#213d7a,#0b1736);border-bottom:2px solid #2e529e;z-index:20}
+.grp{display:flex;gap:6px;align-items:center}
+.btn3d{border:2px solid #fff;border-radius:14px;padding:6px 11px;font-weight:900;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn-g{background:linear-gradient(180deg,#ffea75,#ff9900 75%,#e65100);color:#4a1200;box-shadow:0 3px 0 #9a3412}
+.btn-w{background:linear-gradient(180deg,#fff,#dbeafe 65%,#93c5fd);color:#0f2c5c;box-shadow:0 3px 0 #2563eb}
+.pill{display:flex;align-items:center;gap:6px;background:#0b1633;border:2px solid #35589e;color:#fff;border-radius:14px;padding:4px 10px;font-weight:900;font-size:15px}
+.dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+.dot.r{background:radial-gradient(circle at 30% 30%,#fca5a5,#dc2626)}
+.dot.g{background:radial-gradient(circle at 30% 30%,#bbf7d0,#16a34a)}
+.coin{width:18px;height:18px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#fef9c3,#facc15 50%,#ca8a04);border:1.5px solid #fef08a}
+#finish{height:26px;background:repeating-conic-gradient(#1e293b 0 25%,#e2e8f0 0 50%) 0 0/20px 20px;border-bottom:2px solid #0f172a;box-shadow:0 5px 12px rgba(0,0,0,.6);z-index:15}
+#track{direction:ltr;flex:1;display:flex;position:relative;overflow:hidden;background:#1c222b}
+.side{width:24px;flex:none;position:relative;overflow:hidden;background:#26591d;z-index:4}
+.side-in{position:absolute;inset:-160px 0 0 0;background-size:24px 160px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='160'%3E%3Ccircle cx='12' cy='20' r='11' fill='%231b4d16'/%3E%3Ccircle cx='14' cy='17' r='7' fill='%234ea832'/%3E%3Crect x='2' y='44' width='20' height='74' rx='3' fill='%23334155' stroke='%2394a3b8' stroke-width='2'/%3E%3Ccircle cx='9' cy='56' r='3' fill='%23ef4444'/%3E%3Ccircle cx='15' cy='64' r='3' fill='%233b82f6'/%3E%3Ccircle cx='9' cy='74' r='3' fill='%23facc15'/%3E%3Ccircle cx='15' cy='84' r='3' fill='%2322c55e'/%3E%3Ccircle cx='9' cy='94' r='3' fill='%23f97316'/%3E%3Ccircle cx='15' cy='106' r='3' fill='%23ec4899'/%3E%3Ccircle cx='12' cy='140' r='12' fill='%231b4d16'/%3E%3C/svg%3E")}
+.curb{width:12px;flex:none;z-index:5;background-size:12px 36px}
+.curb.l{background-image:repeating-linear-gradient(180deg,#dc2626 0 18px,#f1f5f9 18px 36px)}
+.curb.r{background-image:repeating-linear-gradient(180deg,#16a34a 0 18px,#f1f5f9 18px 36px)}
+.div{width:22px;flex:none;z-index:6;background:repeating-linear-gradient(180deg,transparent 0 56px,rgba(0,0,0,.45) 56px 58px,rgba(255,255,255,.35) 58px 60px),linear-gradient(90deg,#ef4444 0 3px,#1e293b 3px 5px,#64748b 5px 8px,#cbd5e1 8px 14px,#94a3b8 14px 17px,#1e293b 17px 19px,#22c55e 19px 22px)}
+.lane{flex:1;position:relative;overflow:hidden;background:#232933}
+.p-lane{background-image:radial-gradient(ellipse at 50% 50%,rgba(220,38,38,.2),transparent 75%),linear-gradient(180deg,#2a313d,#1c222b)}
+.ai-lane{background-image:radial-gradient(ellipse at 50% 50%,rgba(22,163,74,.2),transparent 75%),linear-gradient(180deg,#2a313d,#1c222b)}
+.dash{position:absolute;top:0;bottom:0;left:50%;width:6px;margin-left:-3px;background-size:6px 60px}
+.p-lane .dash{background-image:repeating-linear-gradient(180deg,rgba(239,68,68,.65) 0 24px,transparent 24px 60px)}
+.ai-lane .dash{background-image:repeating-linear-gradient(180deg,rgba(34,197,94,.65) 0 24px,transparent 24px 60px)}
+.running .dash{animation:mD .32s linear infinite}
+.running .curb{animation:mC .25s linear infinite}
+.running .side-in{animation:mE .85s linear infinite}
+@keyframes mD{to{background-position-y:60px}}
+@keyframes mC{to{background-position-y:36px}}
+@keyframes mE{to{transform:translateY(160px)}}
+.fl{position:absolute;width:140px;height:120px;pointer-events:none;z-index:7}
+.fl1{top:16%;left:8px;background:radial-gradient(circle at 12% 35%,rgba(255,255,255,.85),transparent 65%)}
+.fl2{top:16%;right:8px;background:radial-gradient(circle at 88% 35%,rgba(255,255,255,.85),transparent 65%)}
+.badge{position:absolute;top:12px;left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:20px;color:#fff;font-weight:900;font-size:14px;white-space:nowrap;border:2px solid rgba(255,255,255,.75);z-index:9}
+.badge::after{content:"";position:absolute;bottom:-8px;left:50%;margin-left:-6px;border-left:6px solid transparent;border-right:6px solid transparent}
+.badge.r{background:linear-gradient(180deg,#f87171,#dc2626 55%,#991b1b)}
+.badge.r::after{border-top:7px solid #991b1b}
+.badge.g{background:linear-gradient(180deg,#4ade80,#16a34a 55%,#166534)}
+.badge.g::after{border-top:7px solid #166534}
+.car{position:absolute;left:50%;bottom:14%;width:68px;height:128px;margin-left:-34px;transition:bottom .08s linear;z-index:10;pointer-events:none;filter:drop-shadow(0 8px 8px rgba(0,0,0,.65))}
+#msg{direction:rtl;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-size:30px;font-weight:900;padding:0 16px;text-shadow:0 0 20px rgba(250,204,21,.95),0 3px 0 #7c2d12,0 5px 12px #000;pointer-events:none;z-index:12}
+#startBtn{position:absolute;right:16px;bottom:20px;z-index:14;background:linear-gradient(180deg,#fef08a,#facc15 35%,#f97316 85%,#ea580c);color:#fff;text-shadow:0 2px 3px rgba(124,45,18,.9);border:3px solid #fff;border-radius:18px;padding:12px 24px;font-size:19px;font-weight:900;box-shadow:0 6px 0 #b45309,0 10px 20px rgba(0,0,0,.6);cursor:pointer}
+#startBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #b45309}
+#hint{direction:rtl;position:absolute;left:14px;bottom:16px;z-index:13;color:#fff;font-size:14px;font-weight:900;text-shadow:0 2px 6px #000;pointer-events:none}
+.sp{position:fixed;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle,#fff,#facc15,#f97316);pointer-events:none;z-index:99;animation:fly .4s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) scale(0);opacity:0}}
+</style>
 </head>
 <body>
 <div id="app">
-  <!-- الشريط العلوي -->
   <div id="top">
     <div class="grp">
-      <button class="btn3d btn-garage" onclick="alert('الجراج هنضيفه في الخطوة الجاية!')">🚗 الجراج</button>
-      <button class="btn3d btn-who" onclick="alert('اللعب مع صاحبك في الخطوة الجاية!')">👥 العب مع مين؟</button>
+      <button class="btn3d btn-g" onclick="alert('الجراج في الخطوة الجاية!')">🚗 الجراج</button>
+      <button class="btn3d btn-w" onclick="alert('اللعب مع صاحبك في الخطوة الجاية!')">👥 العب مع مين؟</button>
     </div>
     <div class="grp">
       <div class="pill"><span id="coins">60</span><span class="coin"></span></div>
       <div class="pill"><span class="dot r"></span><span id="score">0 : 0</span><span class="dot g"></span></div>
     </div>
   </div>
-
-  <!-- خط النهاية -->
   <div id="finish"></div>
-
-  <!-- الحلبة -->
   <div id="track">
-    <div class="side-env"><div class="side-env-inner"></div></div>
-    <div class="curb left"></div>
-
-    <!-- حارة اللاعب (أحمر) -->
+    <div class="side"><div class="side-in"></div></div>
+    <div class="curb l"></div>
     <div class="lane p-lane">
       <div class="dash"></div>
-      <div class="badge red"><span>👤</span><span>أنت</span></div>
+      <div class="badge r">👤 أنت</div>
       <div class="car" id="pCar">
-        <!-- عربية سبورت حمراء بتفاصيل عالية -->
-        <svg viewBox="0 0 72 136" width="72" height="136" style="overflow:visible">
+        <svg viewBox="0 0 72 136" width="68" height="128" style="overflow:visible">
           <defs>
-            <linearGradient id="beamL" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stop-color="#fffbeb" stop-opacity="0.72"/>
-              <stop offset="55%" stop-color="#fff" stop-opacity="0.22"/>
-              <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-            </linearGradient>
-            <linearGradient id="redBody" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#7f1d1d"/>
-              <stop offset="22%" stop-color="#dc2626"/>
-              <stop offset="50%" stop-color="#ff5a4f"/>
-              <stop offset="78%" stop-color="#dc2626"/>
-              <stop offset="100%" stop-color="#7f1d1d"/>
-            </linearGradient>
-            <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#475569"/>
-              <stop offset="40%" stop-color="#0f172a"/>
-              <stop offset="100%" stop-color="#1e293b"/>
-            </linearGradient>
-            <radialGradient id="tailGlow">
-              <stop offset="0%" stop-color="#ff3b3b" stop-opacity="1"/>
-              <stop offset="50%" stop-color="#ef4444" stop-opacity="0.5"/>
-              <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
-            </radialGradient>
+            <linearGradient id="bm" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#fffbeb" stop-opacity=".7"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient>
+            <linearGradient id="rb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7f1d1d"/><stop offset="50%" stop-color="#ff5a4f"/><stop offset="100%" stop-color="#7f1d1d"/></linearGradient>
           </defs>
-          <!-- كشافات أمامية -->
-          <polygon points="14,16 -4,-68 30,-68 27,16" fill="url(#beamL)"/>
-          <polygon points="45,16 42,-68 76,-68 58,16" fill="url(#beamL)"/>
-          <!-- وهج الفرامل الخلفية -->
-          <circle cx="19" cy="126" r="14" fill="url(#tailGlow)"/>
-          <circle cx="53" cy="126" r="14" fill="url(#tailGlow)"/>
-          <!-- كاوتش -->
-          <rect x="3" y="22" width="10" height="24" rx="4" fill="#111827"/>
-          <rect x="59" y="22" width="10" height="24" rx="4" fill="#111827"/>
-          <rect x="3" y="88" width="10" height="26" rx="4" fill="#111827"/>
-          <rect x="59" y="88" width="10" height="26" rx="4" fill="#111827"/>
-          <!-- مرايات -->
-          <path d="M9 50 L2 54 L4 58 L11 56 Z" fill="#dc2626"/>
-          <path d="M63 50 L70 54 L68 58 L61 56 Z" fill="#dc2626"/>
-          <!-- جسم العربية -->
-          <path d="M14 20 Q36 2 58 20 L63 44 L61 104 Q61 124 48 126 L24 126 Q11 124 11 104 L9 44 Z" fill="url(#redBody)" stroke="#fca5a5" stroke-width="1.2"/>
-          <!-- فتحات الكبوت وخطوط الديناميكية -->
-          <path d="M22 18 L26 42 M50 18 L46 42" stroke="#7f1d1d" stroke-width="2" opacity="0.6"/>
-          <path d="M29 14 Q36 10 43 14 L41 26 L31 26 Z" fill="#1e293b" opacity="0.65"/>
-          <!-- زجاج أمامي وسقف -->
-          <path d="M16 46 Q36 33 56 46 L51 66 Q36 60 21 66 Z" fill="url(#glass)" stroke="#94a3b8" stroke-width="1"/>
-          <path d="M21 66 Q36 62 51 66 L49 92 Q36 96 23 92 Z" fill="#b91c1c"/>
-          <path d="M25 70 Q36 67 47 70 L46 88 Q36 91 26 88 Z" fill="#ef4444" opacity="0.7"/>
-          <!-- زجاج خلفي -->
-          <path d="M23 92 L49 92 L52 110 L20 110 Z" fill="url(#glass)"/>
-          <!-- سبويلر خلفي -->
-          <rect x="13" y="114" width="46" height="6" rx="2" fill="#991b1b" stroke="#f87171" stroke-width="0.8"/>
-          <!-- فوانيس أمامية -->
-          <ellipse cx="18" cy="18" rx="4.5" ry="2.5" transform="rotate(-25 18 18)" fill="#fffbeb"/>
-          <ellipse cx="54" cy="18" rx="4.5" ry="2.5" transform="rotate(25 54 18)" fill="#fffbeb"/>
-          <!-- فوانيس خلفية -->
-          <rect x="14" y="122" width="12" height="3.5" rx="1.5" fill="#fff"/>
-          <rect x="46" y="122" width="12" height="3.5" rx="1.5" fill="#fff"/>
+          <polygon points="14,16 -4,-62 30,-62 27,16" fill="url(#bm)"/>
+          <polygon points="45,16 42,-62 76,-62 58,16" fill="url(#bm)"/>
+          <rect x="3" y="22" width="10" height="24" rx="4" fill="#111"/>
+          <rect x="59" y="22" width="10" height="24" rx="4" fill="#111"/>
+          <rect x="3" y="88" width="10" height="26" rx="4" fill="#111"/>
+          <rect x="59" y="88" width="10" height="26" rx="4" fill="#111"/>
+          <path d="M14 20Q36 2 58 20L63 44 61 104Q61 124 48 126L24 126Q11 124 11 104L9 44Z" fill="url(#rb)" stroke="#fca5a5"/>
+          <path d="M16 46Q36 33 56 46L51 66Q36 60 21 66Z" fill="#0f172a" stroke="#94a3b8"/>
+          <path d="M21 66Q36 62 51 66L49 92Q36 96 23 92Z" fill="#b91c1c"/>
+          <path d="M23 92L49 92 52 110 20 110Z" fill="#0f172a"/>
+          <rect x="13" y="114" width="46" height="6" rx="2" fill="#991b1b"/>
+          <rect x="14" y="122" width="12" height="4" rx="2" fill="#ff4d4d"/>
+          <rect x="46" y="122" width="12" height="4" rx="2" fill="#ff4d4d"/>
         </svg>
       </div>
     </div>
-
-    <!-- الحاجز المعدني في المنتصف -->
-    <div class="divider"></div>
-
-    <!-- حارة الكمبيوتر (أخضر) -->
+    <div class="div"></div>
     <div class="lane ai-lane">
       <div class="dash"></div>
-      <div class="badge green"><span>🤖</span><span>الكمبيوتر</span></div>
+      <div class="badge g">🤖 الكمبيوتر</div>
       <div class="car" id="aiCar">
-        <!-- عربية فورمولا خضراء بتفاصيل عالية -->
-        <svg viewBox="0 0 72 136" width="72" height="136" style="overflow:visible">
+        <svg viewBox="0 0 72 136" width="68" height="128" style="overflow:visible">
           <defs>
-            <linearGradient id="greenBody" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#14532d"/>
-              <stop offset="30%" stop-color="#22c55e"/>
-              <stop offset="50%" stop-color="#86efac"/>
-              <stop offset="70%" stop-color="#22c55e"/>
-              <stop offset="100%" stop-color="#14532d"/>
-            </linearGradient>
-            <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#334155"/>
-              <stop offset="50%" stop-color="#cbd5e1"/>
-              <stop offset="100%" stop-color="#334155"/>
-            </linearGradient>
+            <linearGradient id="gb" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#14532d"/><stop offset="50%" stop-color="#86efac"/><stop offset="100%" stop-color="#14532d"/></linearGradient>
           </defs>
-          <!-- كشافات -->
-          <polygon points="14,16 -4,-68 30,-68 27,16" fill="url(#beamL)"/>
-          <polygon points="45,16 42,-68 76,-68 58,16" fill="url(#beamL)"/>
-          <!-- أذرع التعليق -->
-          <path d="M14 34 L58 34 M14 98 L58 98" stroke="#64748b" stroke-width="5"/>
-          <!-- كاوتش فورمولا عريض -->
-          <rect x="2" y="18" width="13" height="28" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
-          <rect x="57" y="18" width="13" height="28" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
-          <rect x="1" y="84" width="14" height="32" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
-          <rect x="57" y="84" width="14" height="32" rx="4" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
-          <!-- جناح أمامي -->
-          <path d="M10 10 L62 10 L58 20 L14 20 Z" fill="url(#greenBody)" stroke="#bb
+          <polygon points="14,16 -4,-62 30,-62 27,16" fill="url(#bm)"/>
+          <polygon points="45,16 42,-62 76,-62 58,16" fill="url(#bm)"/>
+          <path d="M14 34L58 34M14 98L58 98" stroke="#64748b" stroke-width="5"/>
+          <rect x="2" y="18" width="13" height="28" rx="4" fill="#0f172a" stroke="#334155"/>
+          <rect x="57" y="18" width="13" height="28" rx="4" fill="#0f172a" stroke="#334155"/>
+          <rect x="1" y="84" width="14" height="32" rx="4" fill="#0f172a" stroke="#334155"/>
+          <rect x="57" y="84" width="14" height="32" rx="4" fill="#0f172a" stroke="#334155"/>
+          <path d="M10 10L62 10 58 20 14 20Z" fill="url(#gb)" stroke="#bbf7d0"/>
+          <path d="M27 12L45 12 52 46 58 58 54 106 18 106 14 58 20 46Z" fill="url(#gb)" stroke="#dcfce7"/>
+          <ellipse cx="36" cy="54" rx="9" ry="15" fill="#0f172a" stroke="#4ade80"/>
+          <circle cx="36" cy="54" r="5" fill="#a3e635"/>
+          <rect x="28" y="74" width="16" height="26" rx="4" fill="#64748b" stroke="#1e293b"/>
+          <rect x="10" y="112" width="52" height="12" rx="3" fill="#15803d" stroke="#86efac"/>
+        </svg>
+      </div>
+    </div>
+    <div class="curb r"></div>
+    <div class="side"><div class="side-in"></div></div>
+    <div class="fl fl1"></div>
+    <div class="fl fl2"></div>
+    <div id="msg">اضغط «ابدأ السباق» 🏁</div>
+    <div id="hint">دوس في أي مكان بسرعة 👆</div>
+    <button id="startBtn">ابدأ السباق</button>
+  </div>
+</div>
+<script>
+let pPos=14,aiPos=14,running=false,pScore=0,aiScore=0,coins=+(localStorage.getItem("race_coins")||60),aiTimer=null;
+const track=document.getElementById("track"),pCar=document.getElementById("pCar"),aiCar=document.getElementById("aiCar"),msg=document.getElementById("msg"),startBtn=document.getElementById("startBtn"),scoreEl=document.getElementById("score"),coinsEl=document.getElementById("coins");
+coinsEl.textContent=coins;
+function upd(){pCar.style.bottom=pPos+"%";aiCar.style.bottom=aiPos+"%";}
+function sparks(x,y){
+  for(let i=0;i<6;i++){
+    const s=document.createElement("div");s.className="sp";s.style.left=x+"px";s.style.top=y+"px";
+    s.style.setProperty("--x",(Math.random()-.5)*75+"px");s.style.setProperty("--y",(Math.random()-.5)*75+"px");
+    document.body.appendChild(s);setTimeout(()=>s.remove(),400);
+  }
+}
+function end(w){
+  running=false;clearInterval(aiTimer);track.classList.remove("running");
+  if(w==="p"){pScore++;coins+=5;localStorage.setItem("race_coins",coins);msg.textContent="🏆 كسبت السباق! (+5 عملات)";}
+  else{aiScore++;msg.textContent="🤖 الكمبيوتر كسب! جرب تاني";}
+  scoreEl.textContent=pScore+" : "+aiScore;coinsEl.textContent=coins;
+  startBtn.textContent="العب تاني";startBtn.style.display="block";
+}
+startBtn.addEventListener("click",e=>{
+  e.stopPropagation();pPos=14;aiPos=14;upd();startBtn.style.display="none";
+  let c=3;msg.textContent=c;
+  const cd=setInterval(()=>{
+    c--;if(c>0){msg.textContent=c;}else{
+      clearInterval(cd);msg.textContent="انطلق! 🔥";running=true;track.classList.add("running");
+      setTimeout(()=>{if(running)msg.textContent="";},550);
+      aiTimer=setInterval(()=>{
+        if(!running)return;aiPos+=1.4+Math.random()*1.25;
+        if(aiPos>=78){aiPos=78;upd();end("ai");}else upd();
+      },160);
+    }
+  },600);
+});
+track.addEventListener("pointerdown",e=>{
+  if(!running||e.target===startBtn)return;
+  pPos+=2.7;sparks(e.clientX,e.clientY);
+  if(pPos>=78){pPos=78;upd();end("p");}else upd();
+});
+</script>
+</body>
+</html>
