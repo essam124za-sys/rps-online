@@ -20,7 +20,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1633;fon
 .dot.g{background:radial-gradient(circle at 30% 30%,#bbf7d0,#16a34a)}
 .coin{width:18px;height:18px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#fef9c3,#facc15 50%,#ca8a04);border:1.5px solid #fef08a}
 #finish{height:26px;background:repeating-conic-gradient(#1e293b 0 25%,#e2e8f0 0 50%) 0 0/20px 20px;border-bottom:2px solid #0f172a;box-shadow:0 5px 12px rgba(0,0,0,.6);z-index:15}
-#track{direction:ltr;flex:1;display:flex;position:relative;overflow:hidden;background:#1c222b;touch-action:none}
+#track{direction:ltr;flex:1;display:flex;position:relative;overflow:hidden;background:#1c222b}
 .side{width:24px;flex:none;position:relative;overflow:hidden;background:#26591d;z-index:4}
 .side-in{position:absolute;inset:-160px 0 0 0;background-size:24px 160px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='160'%3E%3Ccircle cx='12' cy='20' r='11' fill='%231b4d16'/%3E%3Ccircle cx='14' cy='17' r='7' fill='%234ea832'/%3E%3Crect x='2' y='44' width='20' height='74' rx='3' fill='%23334155' stroke='%2394a3b8' stroke-width='2'/%3E%3Ccircle cx='9' cy='56' r='3' fill='%23ef4444'/%3E%3Ccircle cx='15' cy='64' r='3' fill='%233b82f6'/%3E%3Ccircle cx='9' cy='74' r='3' fill='%23facc15'/%3E%3Ccircle cx='15' cy='84' r='3' fill='%2322c55e'/%3E%3Ccircle cx='9' cy='94' r='3' fill='%23f97316'/%3E%3Ccircle cx='15' cy='106' r='3' fill='%23ec4899'/%3E%3Ccircle cx='12' cy='140' r='12' fill='%231b4d16'/%3E%3C/svg%3E")}
 .curb{width:12px;flex:none;z-index:5;background-size:12px 36px}
@@ -75,17 +75,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1633;fon
 .gbtn.buy:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .gbtn.use{background:linear-gradient(180deg,#4ade80,#16a34a);color:#fff;box-shadow:0 3px 0 #14532d}
 .gbtn.on{background:#1e3a8a;color:#fde047;border-color:#facc15}
-/* قايمة العب مع مين */
-.mbody{flex:1;overflow-y:auto;display:grid;gap:10px;align-content:start;padding-bottom:12px}
-.mbody[hidden]{display:none!important}
-.mbtn{border:2px solid #fff;border-radius:16px;padding:16px;font-size:17px;font-weight:900;cursor:pointer;color:#0f2c5c;background:linear-gradient(180deg,#fff,#dbeafe 65%,#93c5fd);box-shadow:0 4px 0 #2563eb;text-align:center}
-.mbtn.g{color:#4a1200;background:linear-gradient(180deg,#ffea75,#ff9900 75%,#e65100);box-shadow:0 4px 0 #9a3412}
-.mbtn:active{transform:translateY(2px)}
-.minput{width:100%;padding:12px;border-radius:14px;border:2px solid #35589e;background:#0b1633;color:#fff;font-size:17px;font-weight:700;text-align:center;user-select:text;-webkit-user-select:text}
-.mlabel{font-weight:900;color:#fde047}
-.mcode{font-size:56px;font-weight:900;letter-spacing:.2em;direction:ltr;text-align:center;color:#fde047;text-shadow:0 3px 0 #7c2d12}
-.merr{color:#fca5a5;font-weight:900;min-height:1.4em;text-align:center}
-.mnote{color:#cbd5e1;font-size:14px;text-align:center;margin:0}
 </style>
 </head>
 <body>
@@ -93,7 +82,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1633;fon
   <div id="top">
     <div class="grp">
       <button class="btn3d btn-g" onclick="openGarage()">🚗 الجراج</button>
-      <button class="btn3d btn-w" onclick="openMenu()">👥 العب مع مين؟</button>
+      <button class="btn3d btn-w" onclick="alert('اللعب مع صاحبك في الخطوة الجاية!')">👥 العب مع مين؟</button>
     </div>
     <div class="grp">
       <div class="pill"><span id="coins">60</span><span class="coin"></span></div>
@@ -106,13 +95,13 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1633;fon
     <div class="curb l"></div>
     <div class="lane p-lane">
       <div class="dash"></div>
-      <div class="badge r" id="pBadge">👤 أنت</div>
+      <div class="badge r">👤 أنت</div>
       <div class="car" id="pCar"></div>
     </div>
     <div class="div"></div>
     <div class="lane ai-lane">
       <div class="dash"></div>
-      <div class="badge g" id="aiBadge">🤖 الكمبيوتر</div>
+      <div class="badge g">🤖 الكمبيوتر</div>
       <div class="car" id="aiCar"></div>
     </div>
     <div class="curb r"></div>
@@ -134,44 +123,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1633;fon
   <div id="glist"></div>
 </div>
 
-<div class="modal" id="menuModal" hidden>
-  <div class="m-head">
-    <h2>👥 العب مع مين؟</h2>
-    <button class="m-close" onclick="closeMenu()">✕</button>
-  </div>
-  <div class="mbody" id="m-main">
-    <button class="mbtn" onclick="pickMode('same')">📱 إحنا الاتنين على نفس التليفون</button>
-    <button class="mbtn" onclick="pickMode('online')">🌐 كل واحد في تليفون (محتاج نت)</button>
-    <button class="mbtn g" onclick="pickMode('ai')">🤖 ضد الكمبيوتر</button>
-    <p class="mnote">على نفس التليفون: الأحمر بيدوس على النص الشمال، والأخضر على النص اليمين.</p>
-  </div>
-  <div class="mbody" id="m-online" hidden>
-    <label class="mlabel" for="pname">اسمك إيه؟</label>
-    <input class="minput" id="pname" maxlength="12" placeholder="مثلاً: برعي" autocomplete="off">
-    <button class="mbtn g" onclick="onlineCreate()">إنشاء غرفة جديدة</button>
-    <label class="mlabel" for="pcode">أو ادخل غرفة صاحبك بالكود</label>
-    <input class="minput" id="pcode" inputmode="numeric" maxlength="4" placeholder="مثلاً: 4821" autocomplete="off">
-    <button class="mbtn" onclick="onlineJoin()">دخول الغرفة</button>
-    <button class="mbtn" onclick="showMenu('m-main')">رجوع</button>
-    <div class="merr" id="merr"></div>
-  </div>
-  <div class="mbody" id="m-wait" hidden>
-    <p class="mnote">كود غرفتك</p>
-    <div class="mcode" id="mcode"></div>
-    <p class="mnote">ابعت الكود لصاحبك واستنى لحد ما يدخل...</p>
-    <button class="mbtn" onclick="pickMode('ai')">إلغاء</button>
-  </div>
-</div>
-
-<script>
-// لو حصل خطأ في الكود، بيظهر فوق الشاشة عشان نعرف نصلّحه
-window.addEventListener("error", function (e) {
-  var d = document.createElement("div");
-  d.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:999;background:#b00020;color:#fff;padding:8px;font:14px/1.4 monospace;direction:ltr";
-  d.textContent = "Error: " + e.message + " (line " + e.lineno + ")";
-  document.body.appendChild(d);
-});
-</script>
 <script>
 const CARS=[
   {n:"عربيتي",t:"سيدان",p:0,s:1,type:"sedan"},
@@ -236,4 +187,64 @@ function renderGarage(){
     else btn=`<button class="gbtn buy" ${coins<c.p?"disabled":""} onclick="buyCar(${i})">شراء (${c.p} 🪙)</button>`;
     return `<div class="gcard ${isSel?"sel":""}">
       <div class="gpreview">${getCarSVG(c.type,42,76,false,false)}</div>
-      <div class="ginfo
+      <div class="ginfo">
+        <div class="gname">${c.n} <span class="gtag">${c.t}</span></div>
+        <div class="sbar"><i style="width:${pct}%"></i></div>
+        <div class="gspd">السرعة: ${Math.round(c.s*100)}%</div>
+      </div>
+      ${btn}
+    </div>`;
+  }).join("");
+}
+
+function openGarage(){if(running)return;renderGarage();document.getElementById("garageModal").hidden=false;}
+function closeGarage(){document.getElementById("garageModal").hidden=true;}
+function pickCar(i){sel=i;saveGarage();applyCar();renderGarage();}
+function buyCar(i){
+  const c=CARS[i];
+  if(coins<c.p||owned.includes(i))return;
+  coins-=c.p;owned.push(i);sel=i;
+  saveGarage();applyCar();renderGarage();
+}
+
+let pPos=14,aiPos=14,running=false,pScore=0,aiScore=0,aiTimer=null;
+const track=document.getElementById("track"),pCar=document.getElementById("pCar"),aiCar=document.getElementById("aiCar"),msg=document.getElementById("msg"),startBtn=document.getElementById("startBtn"),scoreEl=document.getElementById("score");
+saveGarage();applyCar();
+
+function upd(){pCar.style.bottom=pPos+"%";aiCar.style.bottom=aiPos+"%";}
+function sparks(x,y){
+  for(let i=0;i<6;i++){
+    const s=document.createElement("div");s.className="sp";s.style.left=x+"px";s.style.top=y+"px";
+    s.style.setProperty("--x",(Math.random()-.5)*75+"px");s.style.setProperty("--y",(Math.random()-.5)*75+"px");
+    document.body.appendChild(s);setTimeout(()=>s.remove(),400);
+  }
+}
+function end(w){
+  running=false;clearInterval(aiTimer);track.classList.remove("running");
+  if(w==="p"){pScore++;coins+=5;saveGarage();msg.textContent="🏆 كسبت السباق! (+5 عملات)";}
+  else{aiScore++;msg.textContent="🤖 الكمبيوتر كسب! جرب تاني";}
+  scoreEl.textContent=pScore+" : "+aiScore;
+  startBtn.textContent="العب تاني";startBtn.style.display="block";
+}
+startBtn.addEventListener("click",e=>{
+  e.stopPropagation();pPos=14;aiPos=14;upd();startBtn.style.display="none";
+  let c=3;msg.textContent=c;
+  const cd=setInterval(()=>{
+    c--;if(c>0){msg.textContent=c;}else{
+      clearInterval(cd);msg.textContent="انطلق! 🔥";running=true;track.classList.add("running");
+      setTimeout(()=>{if(running)msg.textContent="";},550);
+      aiTimer=setInterval(()=>{
+        if(!running)return;aiPos+=1.5+Math.random()*1.35;
+        if(aiPos>=78){aiPos=78;upd();end("ai");}else upd();
+      },160);
+    }
+  },600);
+});
+track.addEventListener("pointerdown",e=>{
+  if(!running||e.target===startBtn)return;
+  pPos+=2.4*CARS[sel].s;sparks(e.clientX,e.clientY);
+  if(pPos>=78){pPos=78;upd();end("p");}else upd();
+});
+</script>
+</body>
+</html>
