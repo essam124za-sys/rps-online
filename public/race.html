@@ -4,58 +4,91 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>سباق العربيات</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" async></script>
 <style>
 *{box-sizing:border-box;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1633;font-family:system-ui,Tahoma,sans-serif;touch-action:manipulation}
 #app{display:flex;flex-direction:column;width:100%;height:100%}
-#top{direction:ltr;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 8px;background:linear-gradient(#213d7a,#0b1736);border-bottom:2px solid #2e529e;z-index:20}
+#top{direction:ltr;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 8px;background:linear-gradient(180deg,#213d7a,#0b1736);border-bottom:2px solid #2e529e;z-index:20}
 .grp{display:flex;gap:6px;align-items:center}
 .btn3d{border:2px solid #fff;border-radius:14px;padding:6px 11px;font-weight:900;font-size:13px;cursor:pointer;white-space:nowrap}
-.btn-g{background:linear-gradient(#ffea75,#ff9900 75%,#e65100);color:#4a1200;box-shadow:0 3px 0 #9a3412}
-.btn-w{background:linear-gradient(#fff,#dbeafe 65%,#93c5fd);color:#0f2c5c;box-shadow:0 3px 0 #2563eb}
+.btn3d:active{transform:translateY(2px)}
+.btn-g{background:linear-gradient(180deg,#ffea75,#ff9900 75%,#e65100);color:#4a1200;box-shadow:0 3px 0 #9a3412}
+.btn-w{background:linear-gradient(180deg,#fff,#dbeafe 65%,#93c5fd);color:#0f2c5c;box-shadow:0 3px 0 #2563eb}
 .pill{display:flex;align-items:center;gap:6px;background:#0b1633;border:2px solid #35589e;color:#fff;border-radius:14px;padding:4px 10px;font-weight:900;font-size:15px}
-.dot{width:13px;height:13px;border-radius:50%;display:inline-block}.dot.r{background:#ef4444}.dot.g{background:#22c55e}
-.coin{width:18px;height:18px;border-radius:50%;display:inline-block;background:radial-gradient(#fef9c3,#facc15 55%,#ca8a04);border:1.5px solid #fef08a}
-#finish{height:26px;background:repeating-conic-gradient(#1e293b 0 25%,#e2e8f0 0 50%) 0 0/20px 20px;border-bottom:2px solid #0f172a;z-index:15}
+.dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+.dot.r{background:radial-gradient(circle at 30% 30%,#fca5a5,#dc2626)}
+.dot.g{background:radial-gradient(circle at 30% 30%,#bbf7d0,#16a34a)}
+.coin{width:18px;height:18px;border-radius:50%;display:inline-block;background:radial-gradient(circle at 35% 30%,#fef9c3,#facc15 50%,#ca8a04);border:1.5px solid #fef08a}
+#finish{height:26px;background:repeating-conic-gradient(#1e293b 0 25%,#e2e8f0 0 50%) 0 0/20px 20px;border-bottom:2px solid #0f172a;box-shadow:0 5px 12px rgba(0,0,0,.6);z-index:15}
 #track{direction:ltr;flex:1;display:flex;position:relative;overflow:hidden;background:#1c222b}
 .side{width:24px;flex:none;position:relative;overflow:hidden;background:#26591d;z-index:4}
-.side-in{position:absolute;inset:-160px 0 0 0;background-size:24px 160px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='160'%3E%3Ccircle cx='12' cy='20' r='11' fill='%231b4d16'/%3E%3Crect x='2' y='44' width='20' height='74' rx='3' fill='%23334155' stroke='%2394a3b8' stroke-width='2'/%3E%3Ccircle cx='9' cy='60' r='3' fill='%23ef4444'/%3E%3Ccircle cx='15' cy='76' r='3' fill='%23facc15'/%3E%3Ccircle cx='9' cy='94' r='3' fill='%2338bdf8'/%3E%3Ccircle cx='12' cy='140' r='12' fill='%231b4d16'/%3E%3C/svg%3E")}
+.side-in{position:absolute;inset:-160px 0 0 0;background-size:24px 160px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='160'%3E%3Ccircle cx='12' cy='20' r='11' fill='%231b4d16'/%3E%3Ccircle cx='14' cy='17' r='7' fill='%234ea832'/%3E%3Crect x='2' y='44' width='20' height='74' rx='3' fill='%23334155' stroke='%2394a3b8' stroke-width='2'/%3E%3Ccircle cx='9' cy='56' r='3' fill='%23ef4444'/%3E%3Ccircle cx='15' cy='64' r='3' fill='%233b82f6'/%3E%3Ccircle cx='9' cy='74' r='3' fill='%23facc15'/%3E%3Ccircle cx='15' cy='84' r='3' fill='%2322c55e'/%3E%3Ccircle cx='9' cy='94' r='3' fill='%23f97316'/%3E%3Ccircle cx='15' cy='106' r='3' fill='%23ec4899'/%3E%3Ccircle cx='12' cy='140' r='12' fill='%231b4d16'/%3E%3C/svg%3E")}
 .curb{width:12px;flex:none;z-index:5;background-size:12px 36px}
-.curb.l{background-image:repeating-linear-gradient(#dc2626 0 18px,#f1f5f9 18px 36px)}.curb.r{background-image:repeating-linear-gradient(#16a34a 0 18px,#f1f5f9 18px 36px)}
-.div{width:22px;flex:none;z-index:6;background:repeating-linear-gradient(transparent 0 56px,rgba(0,0,0,.45) 56px 59px),linear-gradient(90deg,#ef4444 0 3px,#1e293b 3px 5px,#cbd5e1 5px 17px,#1e293b 17px 19px,#22c55e 19px 22px)}
+.curb.l{background-image:repeating-linear-gradient(180deg,#dc2626 0 18px,#f1f5f9 18px 36px)}
+.curb.r{background-image:repeating-linear-gradient(180deg,#16a34a 0 18px,#f1f5f9 18px 36px)}
+.div{width:22px;flex:none;z-index:6;background:repeating-linear-gradient(180deg,transparent 0 56px,rgba(0,0,0,.45) 56px 58px,rgba(255,255,255,.35) 58px 60px),linear-gradient(90deg,#ef4444 0 3px,#1e293b 3px 5px,#64748b 5px 8px,#cbd5e1 8px 14px,#94a3b8 14px 17px,#1e293b 17px 19px,#22c55e 19px 22px)}
 .lane{flex:1;position:relative;overflow:hidden;background:#232933}
-.p-lane{background-image:radial-gradient(rgba(220,38,38,.2),transparent 75%)}.ai-lane{background-image:radial-gradient(rgba(22,163,74,.2),transparent 75%)}
+.p-lane{background-image:radial-gradient(ellipse at 50% 50%,rgba(220,38,38,.2),transparent 75%),linear-gradient(180deg,#2a313d,#1c222b)}
+.ai-lane{background-image:radial-gradient(ellipse at 50% 50%,rgba(22,163,74,.2),transparent 75%),linear-gradient(180deg,#2a313d,#1c222b)}
 .dash{position:absolute;top:0;bottom:0;left:50%;width:6px;margin-left:-3px;background-size:6px 60px}
-.p-lane .dash{background-image:repeating-linear-gradient(rgba(239,68,68,.65) 0 24px,transparent 24px 60px)}.ai-lane .dash{background-image:repeating-linear-gradient(rgba(34,197,94,.65) 0 24px,transparent 24px 60px)}
-.run .dash{animation:mD .32s linear infinite}.run .curb{animation:mC .25s linear infinite}.run .side-in{animation:mE .85s linear infinite}
+.p-lane .dash{background-image:repeating-linear-gradient(180deg,rgba(239,68,68,.65) 0 24px,transparent 24px 60px)}
+.ai-lane .dash{background-image:repeating-linear-gradient(180deg,rgba(34,197,94,.65) 0 24px,transparent 24px 60px)}
+.running .dash{animation:mD .32s linear infinite}.running .curb{animation:mC .25s linear infinite}.running .side-in{animation:mE .85s linear infinite}
 @keyframes mD{to{background-position-y:60px}}@keyframes mC{to{background-position-y:36px}}@keyframes mE{to{transform:translateY(160px)}}
-.badge{position:absolute;top:12px;left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:20px;color:#fff;font-weight:900;font-size:14px;white-space:nowrap;border:2px solid #fff;z-index:9}
-.badge.r{background:linear-gradient(#f87171,#dc2626,#991b1b)}.badge.g{background:linear-gradient(#4ade80,#16a34a,#166534)}
+.fl{position:absolute;width:140px;height:120px;pointer-events:none;z-index:7}
+.fl1{top:16%;left:8px;background:radial-gradient(circle at 12% 35%,rgba(255,255,255,.85),transparent 65%)}
+.fl2{top:16%;right:8px;background:radial-gradient(circle at 88% 35%,rgba(255,255,255,.85),transparent 65%)}
+.badge{position:absolute;top:12px;left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:20px;color:#fff;font-weight:900;font-size:14px;white-space:nowrap;border:2px solid rgba(255,255,255,.75);z-index:9}
+.badge::after{content:"";position:absolute;bottom:-8px;left:50%;margin-left:-6px;border-left:6px solid transparent;border-right:6px solid transparent}
+.badge.r{background:linear-gradient(180deg,#f87171,#dc2626 55%,#991b1b)}.badge.r::after{border-top:7px solid #991b1b}
+.badge.g{background:linear-gradient(180deg,#4ade80,#16a34a 55%,#166534)}.badge.g::after{border-top:7px solid #166534}
 .car{position:absolute;left:50%;bottom:14%;width:68px;height:128px;margin-left:-34px;transition:bottom .08s linear;z-index:10;pointer-events:none;filter:drop-shadow(0 8px 8px rgba(0,0,0,.65))}
-#msg{direction:rtl;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-size:27px;font-weight:900;padding:0 16px;text-shadow:0 0 18px #facc15,0 3px 0 #7c2d12,0 5px 12px #000;pointer-events:none;z-index:12}
-#startBtn{position:absolute;right:16px;bottom:20px;z-index:14;background:linear-gradient(#fef08a,#facc15 35%,#f97316 85%,#ea580c);color:#fff;text-shadow:0 2px 3px #7c2d12;border:3px solid #fff;border-radius:18px;padding:12px 24px;font-size:19px;font-weight:900;box-shadow:0 6px 0 #b45309;cursor:pointer}
-#hint{direction:rtl;position:absolute;left:14px;bottom:16px;z-index:13;color:#fff;font-size:13px;font-weight:900;text-shadow:0 2px 6px #000;pointer-events:none}
-.sp{position:fixed;width:7px;height:7px;border-radius:50%;background:#facc15;pointer-events:none;z-index:99;animation:fly .38s ease-out forwards}@keyframes fly{to{transform:translate(var(--x),var(--y)) scale(0);opacity:0}}
-.modal{position:fixed;inset:0;z-index:50;background:rgba(7,13,30,.95);display:flex;flex-direction:column;padding:14px;color:#fff;overflow-y:auto}.modal[hidden]{display:none!important}
-.m-head{display:flex;align-items:center;justify-content:space-between;background:#162954;border:2px solid #35589e;border-radius:16px;padding:10px 14px;margin-bottom:12px}.m-head h2{margin:0;font-size:20px;color:#fde047}
+#msg{direction:rtl;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font-size:28px;font-weight:900;padding:0 16px;text-shadow:0 0 20px rgba(250,204,21,.95),0 3px 0 #7c2d12,0 5px 12px #000;pointer-events:none;z-index:12}
+#startBtn{position:absolute;right:16px;bottom:20px;z-index:14;background:linear-gradient(180deg,#fef08a,#facc15 35%,#f97316 85%,#ea580c);color:#fff;text-shadow:0 2px 3px rgba(124,45,18,.9);border:3px solid #fff;border-radius:18px;padding:12px 24px;font-size:19px;font-weight:900;box-shadow:0 6px 0 #b45309,0 10px 20px rgba(0,0,0,.6);cursor:pointer}
+#startBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #b45309}
+#hint{direction:rtl;position:absolute;left:14px;bottom:16px;z-index:13;color:#fff;font-size:14px;font-weight:900;text-shadow:0 2px 6px #000;pointer-events:none}
+.sp{position:fixed;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle,#fff,#facc15,#f97316);pointer-events:none;z-index:99;animation:fly .4s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) scale(0);opacity:0}}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(7,13,30,.92);display:flex;flex-direction:column;padding:12px;color:#fff}
+.modal[hidden]{display:none!important}
+.m-head{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,#213d7a,#12244d);border:2px solid #35589e;border-radius:16px;padding:10px 14px;margin-bottom:10px}
+.m-head h2{margin:0;font-size:20px;font-weight:900;color:#fde047}
 .m-close{background:#dc2626;color:#fff;border:2px solid #fff;border-radius:12px;width:36px;height:36px;font-size:18px;font-weight:900;cursor:pointer}
-#glist{flex:1;overflow-y:auto;display:grid;gap:10px}.gcard{display:flex;align-items:center;gap:12px;background:#112044;border:2px solid #2e4d8f;border-radius:16px;padding:10px 12px}.gcard.sel{border-color:#facc15}
-.gp{width:44px;height:74px;display:grid;place-items:center;flex:none}.gi{flex:1}.gn{font-size:16px;font-weight:900}.gt{font-size:11px;background:rgba(255,255,255,.15);padding:2px 6px;border-radius:6px;margin-right:4px}
-.sb{height:8px;background:#081024;border-radius:8px;overflow:hidden;margin:6px 0}.sb i{display:block;height:100%;background:linear-gradient(90deg,#f97316,#facc15)}
-.gb{border:2px solid #fff;border-radius:12px;padding:8px 10px;font-weight:900;font-size:13px;cursor:pointer;min-width:88px}.gb.buy{background:#ff9900;color:#4a1200}.gb.buy:disabled{opacity:.4}.gb.use{background:#16a34a;color:#fff}.gb.on{background:#1e3a8a;color:#fde047;border-color:#facc15}
-#whoModal{background:#f7f1e1;color:#111d35;justify-content:center;align-items:center;padding:20px}
-.rw{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}.rt{text-align:center;font-size:32px;font-weight:900;margin:0 0 6px}.rl{font-size:16px;font-weight:900}
+#glist{flex:1;overflow-y:auto;display:grid;gap:10px;padding-bottom:12px}
+.gcard{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#162954,#0e1b38);border:2px solid #2e4d8f;border-radius:16px;padding:10px 12px}
+.gcard.sel{border-color:#facc15;box-shadow:0 0 14px rgba(250,204,21,.35)}
+.gpreview{width:46px;height:78px;display:grid;place-items:center;flex:none}
+.ginfo{flex:1}.gname{font-size:17px;font-weight:900;display:flex;align-items:center;gap:6px}
+.gtag{font-size:11px;background:rgba(255,255,255,.12);color:#cbd5e1;padding:2px 7px;border-radius:8px;font-weight:700}
+.sbar{height:8px;background:#081024;border:1px solid #35589e;border-radius:8px;overflow:hidden;margin:6px 0}
+.sbar i{display:block;height:100%;background:linear-gradient(90deg,#f97316,#facc15)}
+.gspd{font-size:12px;color:#93c5fd;font-weight:700}
+.gbtn{border:2px solid #fff;border-radius:12px;padding:8px 12px;font-weight:900;font-size:13px;cursor:pointer;min-width:92px;text-align:center}
+.gbtn.buy{background:linear-gradient(180deg,#ffea75,#ff9900);color:#4a1200;box-shadow:0 3px 0 #9a3412}.gbtn.buy:disabled{opacity:.45}
+.gbtn.use{background:linear-gradient(180deg,#4ade80,#16a34a);color:#fff;box-shadow:0 3px 0 #14532d}.gbtn.on{background:#1e3a8a;color:#fde047;border-color:#facc15}
+#roomModal{background:#f7f1e1;color:#111d35;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.rw{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
+.rt{text-align:center;font-size:32px;font-weight:900;margin:0 0 6px;color:#111d35}
+.rl{font-size:16px;font-weight:900;color:#111d35}
 .ri{width:100%;padding:14px;border-radius:16px;border:2px solid #111d35;background:#fffdf7;color:#111d35;font-size:17px;font-weight:800;outline:none;user-select:text;-webkit-user-select:text}
-.rb{width:100%;padding:14px;border-radius:16px;font-size:18px;font-weight:900;cursor:pointer;border:2px solid #111d35}.r-dk{background:#111d35;color:#fff}.r-lt{background:#f7f1e1;color:#111d35}.r-ai{background:#e8dfc8;color:#111d35;font-size:15px}
-.wb{background:#fffdf7;border:2px solid #111d35;border-radius:18px;padding:18px;text-align:center}.cb{font-size:40px;font-weight:900;letter-spacing:6px;background:#f7f1e1;border:2px dashed #111d35;border-radius:14px;padding:10px;margin:10px 0}#rSt{text-align:center;font-size:14px;font-weight:800;color:#b91c1c;min-height:18px}
+.rb{width:100%;padding:14px;border-radius:16px;font-size:18px;font-weight:900;cursor:pointer;border:2px solid #111d35}
+.r-dk{background:#111d35;color:#fff}.r-lt{background:#f7f1e1;color:#111d35}.r-ai{background:#e8dfc8;color:#111d35;font-size:15px}
+.wb{background:#fffdf7;border:2px solid #111d35;border-radius:18px;padding:18px;text-align:center}
+.cb{font-size:40px;font-weight:900;letter-spacing:6px;background:#f7f1e1;border:2px dashed #111d35;border-radius:14px;padding:10px;margin:10px 0}
+#rSt{text-align:center;font-size:14px;font-weight:800;color:#b91c1c;min-height:18px}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="top">
-    <div class="grp"><button class="btn3d btn-g" id="gBtn">🚗 الجراج</button><button class="btn3d btn-w" id="wBtn">👥 العب مع مين؟</button></div>
-    <div class="grp"><div class="pill"><span id="coins">60</span><span class="coin"></span></div><div class="pill"><span class="dot r"></span><span id="score">0 : 0</span><span class="dot g"></span></div></div>
+    <div class="grp">
+      <button class="btn3d btn-g" onclick="openGarage()">🚗 الجراج</button>
+      <button class="btn3d btn-w" onclick="openRoom()">👥 العب مع مين؟</button>
+    </div>
+    <div class="grp">
+      <div class="pill"><span id="coins">60</span><span class="coin"></span></div>
+      <div class="pill"><span class="dot r"></span><span id="score">0 : 0</span><span class="dot g"></span></div>
+    </div>
   </div>
   <div id="finish"></div>
   <div id="track">
@@ -64,114 +97,107 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b1633;fon
     <div class="div"></div>
     <div class="lane ai-lane"><div class="dash"></div><div class="badge g" id="b2">🤖 الكمبيوتر</div><div class="car" id="aiCar"></div></div>
     <div class="curb r"></div><div class="side"><div class="side-in"></div></div>
-    <div id="msg">اضغط «ابدأ السباق» 🏁</div><div id="hint">دوس في أي مكان بسرعة 👆</div><button id="startBtn">ابدأ السباق</button>
+    <div class="fl fl1"></div><div class="fl fl2"></div>
+    <div id="msg">اضغط «ابدأ السباق» 🏁</div>
+    <div id="hint">دوس في أي مكان بسرعة 👆</div>
+    <button id="startBtn">ابدأ السباق</button>
   </div>
 </div>
-<div class="modal" id="garageModal" hidden><div class="m-head"><h2>🚗 الجراج</h2><div class="pill"><span id="gCoins">60</span><span class="coin"></span></div><button class="m-close" id="x1">✕</button></div><div id="glist"></div></div>
-<div class="modal" id="whoModal" hidden>
-  <div class="rw" id="roomForm">
+
+<div class="modal" id="garageModal" hidden>
+  <div class="m-head"><h2>🚗 الجراج</h2><div class="pill"><span id="gCoins">60</span><span class="coin"></span></div><button class="m-close" onclick="closeGarage()">✕</button></div>
+  <div id="glist"></div>
+</div>
+
+<div class="modal" id="roomModal" hidden>
+  <div class="rw" id="rForm">
     <h1 class="rt">سباق العربيات</h1>
-    <div class="rl">اسمك إيه؟</div><input class="ri" id="nameIn" maxlength="12" placeholder="مثلاً: برعي"><button class="rb r-dk" id="createBtn">إنشاء غرفة جديدة</button>
-    <div class="rl">أو ادخل غرفة صاحبك بالكود</div><input class="ri" id="codeIn" type="tel" maxlength="4" placeholder="مثلاً: 4821"><button class="rb r-lt" id="joinBtn">دخول الغرفة</button>
-    <div id="rSt"></div><button class="rb r-ai" id="aiModeBtn">🤖 العب ضد الكمبيوتر</button><button class="rb r-lt" id="backBtn">رجوع</button>
+    <div class="rl">اسمك إيه؟</div>
+    <input class="ri" id="rName" maxlength="12" placeholder="مثلاً: برعي">
+    <button class="rb r-dk" onclick="createRoom()">إنشاء غرفة جديدة</button>
+    <div class="rl">أو ادخل غرفة صاحبك بالكود</div>
+    <input class="ri" id="rCode" type="tel" maxlength="4" placeholder="مثلاً: 4821">
+    <button class="rb r-lt" onclick="joinRoom()">دخول الغرفة</button>
+    <div id="rSt"></div>
+    <button class="rb r-ai" onclick="backToAI()">🤖 العب ضد الكمبيوتر</button>
+    <button class="rb r-lt" onclick="closeRoom()">رجوع</button>
   </div>
-  <div class="rw" id="waitForm" hidden>
+  <div class="rw" id="rWait" hidden>
     <h1 class="rt">غرفة السباق</h1>
-    <div class="wb"><div style="font-weight:900">ابعت الكود ده لصاحبك:</div><div class="cb" id="codeTxt">----</div><button class="rb r-dk" id="copyBtn" style="padding:10px;font-size:15px">📋 نسخ الكود</button><p style="margin:12px 0 0;font-weight:800;color:#334155">في انتظار صاحبك يدخل... ⏳</p></div>
-    <button class="rb r-lt" id="cancelBtn">رجوع</button>
+    <div class="wb">
+      <div style="font-weight:900">ابعت الكود ده لصاحبك:</div>
+      <div class="cb" id="rCodeTxt">----</div>
+      <button class="rb r-dk" id="rCopy" onclick="copyCode()" style="padding:10px;font-size:15px">📋 نسخ الكود</button>
+      <p style="margin:12px 0 0;font-weight:800;color:#334155">في انتظار صاحبك يدخل... ⏳</p>
+    </div>
+    <button class="rb r-lt" onclick="cancelRoom()">رجوع</button>
   </div>
 </div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" defer></script>
 <script>
-const CARS=[{n:"عربيتي",t:"سيدان",p:0,s:1},{n:"الشهاب",t:"مطاردة",p:5,s:1.12},{n:"الصقر",t:"عضلات",p:10,s:1.25},{n:"النمر",t:"4×4",p:15,s:1.38},{n:"الفهد",t:"سوبر",p:20,s:1.52},{n:"البرق",t:"فورمولا",p:25,s:1.68},{n:"الأسطورة",t:"هايبر",p:30,s:1.85}];
+const CARS=[
+  {n:"عربيتي",t:"سيدان",p:0,s:1,type:"sedan"},
+  {n:"الشهاب",t:"مطاردة",p:5,s:1.12,type:"police"},
+  {n:"الصقر",t:"عضلات",p:10,s:1.25,type:"muscle"},
+  {n:"النمر",t:"دفع رباعي",p:15,s:1.38,type:"pickup"},
+  {n:"الفهد",t:"سوبر كار",p:20,s:1.52,type:"super"},
+  {n:"البرق",t:"فورمولا",p:25,s:1.68,type:"f1"},
+  {n:"الأسطورة",t:"هايبر",p:30,s:1.85,type:"hyper"}
+];
+
+function getCarSVG(type,w,h,beam,ai){
+  const id="b"+Math.random().toString(36).slice(2,6);
+  const bm=beam?`<defs><linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#fffbeb" stop-opacity=".72"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><polygon points="14,16 -4,-62 30,-62 27,16" fill="url(#${id})"/><polygon points="45,16 42,-62 76,-62 58,16" fill="url(#${id})"/>`:"";
+  const wh=`<rect x="3" y="22" width="10" height="24" rx="4" fill="#111"/><rect x="59" y="22" width="10" height="24" rx="4" fill="#111"/><rect x="3" y="88" width="10" height="26" rx="4" fill="#111"/><rect x="59" y="88" width="10" height="26" rx="4" fill="#111"/>`;
+  let body="";
+  if(type==="sedan")body=wh+`<path d="M14 20Q36 4 58 20L61 106Q61 124 48 126L24 126Q11 124 11 106Z" fill="#dc2626" stroke="#fca5a5"/><path d="M16 46Q36 34 56 46L51 66Q36 60 21 66Z" fill="#0f172a"/><path d="M21 66Q36 62 51 66L49 92Q36 96 23 92Z" fill="#b91c1c"/><path d="M23 92L49 92 52 110 20 110Z" fill="#0f172a"/><rect x="14" y="122" width="12" height="4" rx="2" fill="#ff4d4d"/><rect x="46" y="122" width="12" height="4" rx="2" fill="#ff4d4d"/>`;
+  else if(type==="police")body=wh+`<path d="M14 18Q36 2 58 18L62 108Q62 125 48 127L24 127Q10 125 10 108Z" fill="#1d4ed8" stroke="#93c5fd"/><rect x="12" y="54" width="48" height="44" rx="4" fill="#f8fafc"/><path d="M16 42Q36 30 56 42L51 60Q36 55 21 60Z" fill="#0f172a"/><path d="M22 94L50 94 53 112 19 112Z" fill="#0f172a"/><rect x="20" y="68" width="15" height="6" rx="2" fill="#ef4444"/><rect x="37" y="68" width="15" height="6" rx="2" fill="#38bdf8"/><rect x="33" y="68" width="6" height="6" fill="#fff"/>`;
+  else if(type==="muscle")body=wh+`<path d="M11 14L61 14 64 122 8 122Z" fill="#eab308" stroke="#fef08a"/><rect x="24" y="14" width="8" height="108" fill="#1e293b"/><rect x="40" y="14" width="8" height="108" fill="#1e293b"/><rect x="28" y="24" width="16" height="18" rx="3" fill="#94a3b8" stroke="#0f172a"/><path d="M15 52L57 52 53 70 19 70Z" fill="#0f172a"/><path d="M20 94L52 94 55 110 17 110Z" fill="#0f172a"/><rect x="9" y="118" width="54" height="6" rx="2" fill="#0f172a"/>`;
+  else if(type==="pickup")body=`<rect x="1" y="18" width="13" height="28" rx="4" fill="#090d16" stroke="#475569"/><rect x="58" y="18" width="13" height="28" rx="4" fill="#090d16" stroke="#475569"/><rect x="1" y="84" width="13" height="28" rx="4" fill="#090d16" stroke="#475569"/><rect x="58" y="84" width="13" height="28" rx="4" fill="#090d16" stroke="#475569"/><rect x="11" y="12" width="50" height="114" rx="8" fill="#7c3aed" stroke="#c4b5fd"/><rect x="16" y="72" width="40" height="46" rx="4" fill="#2e1065" stroke="#5b21b6" stroke-width="2"/><path d="M16 40L56 40 53 56 19 56Z" fill="#0f172a"/><rect x="18" y="56" width="36" height="16" rx="2" fill="#6d28d9"/><rect x="16" y="70" width="40" height="4" fill="#e2e8f0"/>`;
+  else if(type==="super")body=wh+`<path d="M22 10L50 10 64 46 62 114 48 126 24 126 10 114 8 46Z" fill="#f97316" stroke="#fed7aa"/><path d="M11 54L18 66 15 92 10 86Z" fill="#1e293b"/><path d="M61 54L54 66 57 92 62 86Z" fill="#1e293b"/><path d="M18 38Q36 22 54 38L49 64Q36 58 23 64Z" fill="#0f172a" stroke="#fff"/><path d="M23 70L49 70 46 108 26 108Z" fill="#1e293b"/><path d="M26 76H46M26 84H46M26 92H46" stroke="#f97316" stroke-width="2"/><rect x="12" y="118" width="48" height="6" rx="2" fill="#0f172a"/>`;
+  else if(type==="f1"){
+    const c1=ai?"#22c55e":"#38bdf8",c2=ai?"#14532d":"#0284c7",bd=ai?"#86efac":"#e2e8f0";
+    body=`<path d="M14 34L58 34M14 98L58 98" stroke="#64748b" stroke-width="5"/><rect x="2" y="18" width="13" height="28" rx="4" fill="#0f172a" stroke="#334155"/><rect x="57" y="18" width="13" height="28" rx="4" fill="#0f172a" stroke="#334155"/><rect x="1" y="84" width="14" height="32" rx="4" fill="#0f172a" stroke="#334155"/><rect x="57" y="84" width="14" height="32" rx="4" fill="#0f172a" stroke="#334155"/><path d="M10 10L62 10 58 20 14 20Z" fill="${c1}" stroke="${bd}"/><path d="M27 12L45 12 52 46 58 58 54 106 18 106 14 58 20 46Z" fill="${bd}" stroke="${c1}" stroke-width="1.5"/><ellipse cx="36" cy="54" rx="9" ry="15" fill="#0f172a" stroke="${c1}"/><circle cx="36" cy="54" r="5" fill="${c1}"/><rect x="28" y="74" width="16" height="26" rx="4" fill="#475569"/><rect x="10" y="112" width="52" height="12" rx="3" fill="${c2}" stroke="${c1}"/>`;
+  }else body=wh+`<path d="M36 4L54 24 64 56 60 124 46 116 36 124 26 116 12 124 8 56 18 24Z" fill="#090d16" stroke="#facc15" stroke-width="1.5"/><path d="M36 8L46 34 36 44 26 34Z" fill="#facc15" opacity=".85"/><path d="M19 46Q36 32 53 46L47 68Q36 62 25 68Z" fill="#1e293b" stroke="#facc15"/><path d="M12 76L6 124 16 118Z" fill="#facc15"/><path d="M60 76L66 124 56 118Z" fill="#facc15"/><circle cx="36" cy="118" r="6" fill="#f97316"/>`;
+  return `<svg viewBox="0 0 72 136" width="${w}" height="${h}" style="overflow:visible">${bm}${body}</svg>`;
+}
+
 const $=id=>document.getElementById(id);
-function svgCar(k,w,h,bm,gr){
-  const u=Math.random().toString(36).slice(2,6);
-  const g=bm?`<defs><linearGradient id="b${u}" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#fffbeb" stop-opacity=".7"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><polygon points="14,16 -4,-58 30,-58 27,16" fill="url(#b${u})"/><polygon points="45,16 42,-58 76,-58 58,16" fill="url(#b${u})"/>`:"";
-  const wh='<rect x="3" y="22" width="10" height="24" rx="4" fill="#111"/><rect x="59" y="22" width="10" height="24" rx="4" fill="#111"/><rect x="3" y="88" width="10" height="26" rx="4" fill="#111"/><rect x="59" y="88" width="10" height="26" rx="4" fill="#111"/>';
-  const B=[
-    wh+'<path d="M14 20Q36 4 58 20L61 106Q61 124 48 126H24Q11 124 11 106Z" fill="#dc2626" stroke="#fca5a5"/><path d="M16 46Q36 34 56 46L51 66Q36 60 21 66Z" fill="#0f172a"/><path d="M23 92H49L52 110H20Z" fill="#0f172a"/>',
-    wh+'<path d="M14 18Q36 2 58 18L62 108Q62 125 48 127H24Q10 125 10 108Z" fill="#1d4ed8" stroke="#93c5fd"/><rect x="12" y="54" width="48" height="44" rx="4" fill="#fff"/><path d="M16 42Q36 30 56 42L51 60Q36 55 21 60Z" fill="#0f172a"/><rect x="20" y="68" width="15" height="6" rx="2" fill="#ef4444"/><rect x="37" y="68" width="15" height="6" rx="2" fill="#38bdf8"/>',
-    wh+'<path d="M11 14H61L64 122H8Z" fill="#eab308" stroke="#fef08a"/><rect x="24" y="14" width="8" height="108" fill="#1e293b"/><rect x="40" y="14" width="8" height="108" fill="#1e293b"/><rect x="28" y="24" width="16" height="18" rx="3" fill="#94a3b8"/><path d="M15 52H57L53 70H19Z" fill="#0f172a"/>',
-    wh+'<rect x="10" y="12" width="52" height="114" rx="8" fill="#7c3aed" stroke="#c4b5fd"/><rect x="16" y="72" width="40" height="46" rx="4" fill="#2e1065"/><path d="M16 40H56L53 56H19Z" fill="#0f172a"/><rect x="16" y="70" width="40" height="4" fill="#e2e8f0"/>',
-    wh+'<path d="M22 10H50L64 46 62 114 48 126H24L10 114 8 46Z" fill="#f97316" stroke="#fed7aa"/><path d="M18 38Q36 22 54 38L49 64Q36 58 23 64Z" fill="#0f172a"/><path d="M23 70H49L46 108H26Z" fill="#1e293b"/>',
-    `<path d="M14 34H58M14 98H58" stroke="#64748b" stroke-width="5"/>${wh}<path d="M10 10H62L58 20H14Z" fill="${gr?"#22c55e":"#38bdf8"}"/><path d="M27 12H45L54 106H18Z" fill="${gr?"#86efac":"#e2e8f0"}"/><ellipse cx="36" cy="54" rx="9" ry="15" fill="#0f172a"/><rect x="10" y="112" width="52" height="12" rx="3" fill="${gr?"#14532d":"#0284c7"}"/>`,
-    wh+'<path d="M36 4L54 24 64 56 60 124 46 116 36 124 26 116 12 124 8 56 18 24Z" fill="#090d16" stroke="#facc15" stroke-width="1.5"/><path d="M36 8L46 34 36 44 26 34Z" fill="#facc15"/><path d="M19 46Q36 32 53 46L47 68Q36 62 25 68Z" fill="#1e293b" stroke="#facc15"/><circle cx="36" cy="118" r="6" fill="#f97316"/>'
-  ];
-  return `<svg viewBox="0 0 72 136" width="${w}" height="${h}" style="overflow:visible">${g}${B[k]||B[0]}</svg>`;
-}
-const cr=localStorage.getItem("race_coins");
-let coins=cr===null?60:+cr,owned=JSON.parse(localStorage.getItem("race_owned")||"[0]"),sel=+(localStorage.getItem("race_car")||0);
+const _c=localStorage.getItem("race_coins");
+let coins=_c===null?60:+_c,owned=JSON.parse(localStorage.getItem("race_owned")||"[0]"),sel=+(localStorage.getItem("race_car")||0);
 if(!owned.includes(sel))sel=0;
-$("nameIn").value=localStorage.getItem("race_name")||"";
-let mode="ai",role="host",peer=null,conn=null,myN="أنت",opN="الكمبيوتر",opC=5,p1=14,p2=14,run=false,s1=0,s2=0,tmr=null;
-function save(){localStorage.setItem("race_coins",coins);localStorage.setItem("race_owned",JSON.stringify(owned));localStorage.setItem("race_car",sel);$("coins").textContent=coins;$("gCoins").textContent=coins;}
-function draw(){
-  const cL=mode==="online"?(role==="host"?sel:opC):sel,cR=mode==="online"?(role==="host"?opC:sel):5;
-  $("pCar").innerHTML=svgCar(cL,68,128,1,0);$("aiCar").innerHTML=svgCar(cR,68,128,1,cR===5?1:0);
+$("rName").value=localStorage.getItem("race_name")||"";
+
+let pPos=14,aiPos=14,running=false,pScore=0,aiScore=0,aiTimer=null;
+let online=false,role="host",peer=null,conn=null,myName="أنت",oppName="الكمبيوتر",oppCar=5;
+const track=$("track"),pCar=$("pCar"),aiCar=$("aiCar"),msg=$("msg"),startBtn=$("startBtn"),scoreEl=$("score");
+
+function saveGarage(){
+  localStorage.setItem("race_coins",coins);
+  localStorage.setItem("race_owned",JSON.stringify(owned));
+  localStorage.setItem("race_car",sel);
+  $("coins").textContent=coins;$("gCoins").textContent=coins;
 }
-function renderG(){
+function applyCar(){
+  const cL=online?(role==="host"?sel:oppCar):sel;
+  const cR=online?(role==="host"?oppCar:sel):5;
+  pCar.innerHTML=getCarSVG(CARS[cL].type,68,128,true,false);
+  aiCar.innerHTML=getCarSVG(CARS[cR].type,68,128,true,cR===5);
+}
+function renderGarage(){
   $("gCoins").textContent=coins;
   $("glist").innerHTML=CARS.map((c,i)=>{
-    const has=owned.includes(i),on=sel===i,pct=Math.round(((c.s-.8)/1.1)*100);
-    const btn=on?'<button class="gb on" disabled>مختارة ✓</button>':has?`<button class="gb use" onclick="pick(${i})">اختيار</button>`:`<button class="gb buy" ${coins<c.p?"disabled":""} onclick="buy(${i})">شراء (${c.p} 🪙)</button>`;
-    return `<div class="gcard ${on?"sel":""}"><div class="gp">${svgCar(i,42,74,0,0)}</div><div class="gi"><div class="gn">${c.n}<span class="gt">${c.t}</span></div><div class="sb"><i style="width:${pct}%"></i></div><div style="font-size:12px;color:#93c5fd">السرعة: ${Math.round(c.s*100)}%</div></div>${btn}</div>`;
+    const has=owned.includes(i),isSel=sel===i,pct=Math.round(((c.s-0.8)/1.1)*100);
+    const btn=isSel?`<button class="gbtn on" disabled>مختارة ✓</button>`:has?`<button class="gbtn use" onclick="pickCar(${i})">اختيار</button>`:`<button class="gbtn buy" ${coins<c.p?"disabled":""} onclick="buyCar(${i})">شراء (${c.p} 🪙)</button>`;
+    return `<div class="gcard ${isSel?"sel":""}"><div class="gpreview">${getCarSVG(c.type,42,76,false,false)}</div><div class="ginfo"><div class="gname">${c.n} <span class="gtag">${c.t}</span></div><div class="sbar"><i style="width:${pct}%"></i></div><div class="gspd">السرعة: ${Math.round(c.s*100)}%</div></div>${btn}</div>`;
   }).join("");
 }
-function pick(i){sel=i;save();draw();renderG();if(mode==="online"&&conn&&conn.open)conn.send({t:"car",c:sel});}
-function buy(i){const c=CARS[i];if(coins>=c.p&&!owned.includes(i)){coins-=c.p;owned.push(i);pick(i);}}
-function closeAll(){$("garageModal").hidden=true;$("whoModal").hidden=true;}
-function killNet(){if(conn){try{conn.close();}catch(e){}}if(peer){try{peer.destroy();}catch(e){}}conn=null;peer=null;}
-$("gBtn").onclick=()=>{if(!run){renderG();$("garageModal").hidden=false;}};
-$("wBtn").onclick=()=>{if(!run){$("rSt").textContent="";$("roomForm").hidden=false;$("waitForm").hidden=true;$("whoModal").hidden=false;}};
-$("x1").onclick=$("backBtn").onclick=closeAll;
-$("cancelBtn").onclick=()=>{killNet();$("waitForm").hidden=true;$("roomForm").hidden=false;$("rSt").textContent="";};
-$("aiModeBtn").onclick=()=>{killNet();mode="ai";s1=0;s2=0;$("score").textContent="0 : 0";p1=14;p2=14;upd();$("b1").textContent="👤 أنت";$("b2").textContent="🤖 الكمبيوتر";$("hint").textContent="دوس في أي مكان بسرعة 👆";draw();closeAll();$("msg").textContent="اضغط «ابدأ السباق» 🏁";$("startBtn").textContent="ابدأ السباق";$("startBtn").style.display="block";};
-function bindConn(){
-  const hi=()=>conn.send({t:"hi",n:myN,c:sel});
-  if(conn.open)hi();else conn.on("open",hi);
-  conn.on("data",d=>{
-    if(d.t==="hi"){opN=d.n;opC=d.c;s1=0;s2=0;$("score").textContent="0 : 0";p1=14;p2=14;upd();$("b1").textContent="👤 "+(role==="host"?myN:opN);$("b2").textContent="👤 "+(role==="host"?opN:myN);$("hint").textContent="دوس بسرعة تحرك عربيتك ("+myN+") 👆";draw();closeAll();$("msg").textContent="اتصلتم! اضغط «ابدأ السباق» 🏁";$("startBtn").textContent="ابدأ السباق";$("startBtn").style.display="block";}
-    else if(d.t==="car"){opC=d.c;draw();}
-    else if(d.t==="go"){go();}
-    else if(d.t==="pos"){if(d.s===1)p1=d.v;else p2=d.v;upd();}
-    else if(d.t==="win"){end(d.w);}
-  });
-  conn.on("close",()=>{if(mode==="online"){run=false;clearInterval(tmr);$("track").classList.remove("run");$("msg").textContent="صاحبك خرج من الغرفة 🚪";$("startBtn").style.display="block";}});
-}
-$("createBtn").onclick=()=>{
-  if(typeof Peer==="undefined"){$("rSt").textContent="استنى ثانية للإنترنت وجرب تاني";return;}
-  myN=$("nameIn").value.trim()||"لاعب 1";localStorage.setItem("race_name",myN);$("rSt").textContent="جاري إنشاء الغرفة...";killNet();
-  const code=String(Math.floor(1000+Math.random()*9000));
-  peer=new Peer("shnr9-"+code);
-  peer.on("open",()=>{$("codeTxt").textContent=code;$("roomForm").hidden=true;$("waitForm").hidden=false;$("rSt").textContent="";});
-  peer.on("connection",c=>{conn=c;role="host";mode="online";bindConn();});
-  peer.on("error",e=>{if(e.type==="unavailable-id")$("createBtn").click();else $("rSt").textContent="مشكلة شبكة، جرب تاني";});
-};
-$("copyBtn").onclick=()=>{const c=$("codeTxt").textContent;if(navigator.clipboard)navigator.clipboard.writeText(c);$("copyBtn").textContent="✅ تم النسخ ("+c+")";setTimeout(()=>$("copyBtn").textContent="📋 نسخ الكود",1500);};
-$("joinBtn").onclick=()=>{
-  if(typeof Peer==="undefined"){$("rSt").textContent="استنى ثانية للإنترنت وجرب تاني";return;}
-  myN=$("nameIn").value.trim()||"لاعب 2";localStorage.setItem("race_name",myN);
-  const code=$("codeIn").value.trim();if(code.length!==4){$("rSt").textContent="اكتب كود من 4 أرقام";return;}
-  $("rSt").textContent="جاري الدخول...";killNet();peer=new Peer();
-  peer.on("open",()=>{conn=peer.connect("shnr9-"+code,{reliable:true});role="guest";mode="online";bindConn();});
-  peer.on("error",()=>$("rSt").textContent="الكود غلط أو الغرفة مقفولة");
-};
-save();draw();
-function upd(){$("pCar").style.bottom=p1+"%";$("aiCar").style.bottom=p2+"%";}
-function spk(x,y){for(let i=0;i<5;i++){const s=document.createElement("div");s.className="sp";s.style.left=x+"px";s.style.top=y+"px";s.style.setProperty("--x",(Math.random()-.5)*70+"px");s.style.setProperty("--y",(Math.random()-.5)*70+"px");document.body.appendChild(s);setTimeout(()=>s.remove(),380);}}
-function end(w){
-  if(!run)return;run=false;clearInterval(tmr);$("track").classList.remove("run");
-  if(mode==="online"){
-    const n1=role==="host"?myN:opN,n2=role==="host"?opN:myN,iW=(role==="host"&&w===1)||(role==="guest"&&w===2);
-    if(iW){coins+=5;save();}
-    if(w===1){s1++;$("msg").textContent="🏆 "+n1+" كسب!"+(iW?" (+5 🪙)":"");}else{s2++;$("msg").textContent="🏆 "+n2+" كسب!"+(iW?" (+5 🪙)":"");}
-  }else{
-    if(w===1){s1++;coins+=5;save();$("msg").textContent="🏆 كسبت! (+5 🪙)";}else{s2++;$("msg").textContent="🤖 الكمبيوتر كسب!";}
-  }
-  $("score").textContent=s1+" : "+s2;$("startBtn").textContent="العب تاني";$("startBtn").style.display="block";
-}
-function go(){
-  p1=14;p2=14;upd();$("startBtn").style.display="none";let c=3;$("msg").textContent=c;
-  const cd=setInterval(()=>{c--;if(c>0)$("msg").textContent=c;else{clearInterval(cd);$("msg").textContent="انطلق! 🔥";run=true;$("track").classList.add("run");setTimeout(()=>{if(run)$("msg").textContent="";},500);if(mode==="ai")tmr=setInterval(()=>{if(run){p2+=1.5+Math.random()*1.3;if(p2>=78){p2=78;upd();end(2);}else upd();}},160);}},600);
-}
-$("startBtn").onclick=e=>{e.stopPropagation();if(mode==="online"&&conn&&conn.open)conn.s
+function openGarage(){if(!running){renderGarage();$("garageModal").hidden=false;}}
+function closeGarage(){$("garageModal").hidden=true;}
+function pickCar(i){sel=i;saveGarage();applyCar();renderGarage();if(online&&conn&&conn.open)conn.send({t:"car",c:sel});}
+function buyCar(i){const c=CARS[i];if(coins>=c.p&&!owned.includes(i)){coins-=c.p;owned.push(i);pickCar(i);}}
+
+function openRoom(){if(!running){$("rSt").textContent="";$("rForm").hidden=false;$("rWait").hidden=true;$("roomModal").hidden=false;}}
+function closeRoom(){$("roomModal").hidden=true;}
+function killNet(){if(conn){try{conn.close();
